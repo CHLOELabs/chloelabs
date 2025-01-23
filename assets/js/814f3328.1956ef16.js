@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkmy_website=self.webpackChunkmy_website||[]).push([[472],{5513:e=>{e.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"Building Big Futures, Byte-by-Byte","permalink":"/chloelabs/blog/first-blog-post","unlisted":false,"date":"2025-01-23T00:00:00.000Z"}]}')}}]);
