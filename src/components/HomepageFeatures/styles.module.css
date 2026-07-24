@@ -1,0 +1,39 @@
+.features {
+  display: flex;
+  align-items: center;
+  padding: 2rem 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.featureSvg {
+  height: 200px;
+  width: 200px;
+  max-width: 100%;
+  display: block;
+  margin-inline: auto;
+}
+
+@media screen and (max-width: 996px) {
+  .features {
+    padding: 2.5rem 1rem;
+  }
+
+  .features :global(.row) {
+    margin-inline: 0;
+  }
+
+  .features :global(.col) {
+    flex: 0 0 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding-inline: 0;
+    margin-bottom: 2.5rem;
+  }
+
+  .featureSvg {
+    width: min(200px, 70vw);
+    height: auto;
+    aspect-ratio: 1;
+  }
+}
