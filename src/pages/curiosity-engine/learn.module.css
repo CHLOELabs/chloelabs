@@ -1,0 +1,267 @@
+.page {
+  background: var(--ifm-background-surface-color);
+  min-height: 75vh;
+}
+
+.hero {
+  background: var(--ifm-color-primary);
+  color: white;
+  padding: 3.75rem 1rem;
+}
+
+.hero :global(.container),
+.content {
+  max-width: 980px;
+}
+
+.hero h1 {
+  color: white;
+  font-size: clamp(2.25rem, 6vw, 4rem);
+  margin: 0.5rem 0 0.75rem;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  margin: 0;
+  max-width: 700px;
+}
+
+.backLink {
+  color: white;
+  display: inline-block;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.backLink:hover {
+  color: white;
+}
+
+.eyebrow {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.content {
+  padding-bottom: 5rem;
+  padding-top: 2.5rem;
+}
+
+.step {
+  background: var(--ifm-background-color);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(2, 37, 50, 0.07);
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  margin-bottom: 1.5rem;
+  padding: 1.75rem;
+}
+
+.step h2 {
+  margin-bottom: 0.4rem;
+}
+
+.stepNumber {
+  align-items: center;
+  background: var(--ifm-color-primary);
+  border-radius: 999px;
+  color: white;
+  display: flex;
+  font-size: 1rem;
+  font-weight: 800;
+  height: 2.4rem;
+  justify-content: center;
+  width: 2.4rem;
+}
+
+.label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.textarea,
+.input {
+  background: var(--ifm-background-color);
+  border: 2px solid var(--ifm-color-emphasis-300);
+  border-radius: 0.65rem;
+  color: var(--ifm-font-color-base);
+  font: inherit;
+  padding: 0.85rem 1rem;
+  width: 100%;
+}
+
+.textarea {
+  resize: vertical;
+}
+
+.textarea:focus,
+.input:focus {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 0 0 3px rgba(3, 160, 181, 0.18);
+  outline: none;
+}
+
+.questionGrid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.questionCard {
+  background: var(--ifm-background-color);
+  border: 2px solid var(--ifm-color-emphasis-300);
+  border-radius: 0.75rem;
+  color: var(--ifm-font-color-base);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 1rem;
+  text-align: left;
+}
+
+.questionCard:hover,
+.questionCard:focus-visible,
+.selected {
+  border-color: var(--ifm-color-primary);
+}
+
+.selected {
+  background: var(--ifm-color-primary-lightest);
+}
+
+.questionCard:focus-visible {
+  outline: 3px solid rgba(3, 160, 181, 0.2);
+  outline-offset: 2px;
+}
+
+.customQuestion {
+  margin-top: 1rem;
+}
+
+.activeQuestion {
+  color: var(--ifm-color-primary-darkest);
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.discoveryGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.discoveryCard {
+  background: var(--ifm-color-primary-lightest);
+  border-radius: 0.8rem;
+  padding: 1.25rem;
+}
+
+.discoveryCard span {
+  color: var(--ifm-color-primary-darkest);
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.6rem;
+  text-transform: uppercase;
+}
+
+.discoveryCard p {
+  margin: 0;
+}
+
+.prototypeNote {
+  font-size: 0.88rem;
+  margin: 1rem 0 0;
+  opacity: 0.7;
+}
+
+.answerList {
+  display: grid;
+  gap: 0.6rem;
+  margin: 1rem 0;
+}
+
+.answerChoice {
+  align-items: flex-start;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 0.65rem;
+  cursor: pointer;
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+}
+
+.answerChoice input {
+  margin-top: 0.25rem;
+}
+
+.correct,
+.tryAgain {
+  border-radius: 0.65rem;
+  font-weight: 700;
+  margin: 1rem 0 0;
+  padding: 0.85rem 1rem;
+}
+
+.correct {
+  background: #e4f6ec;
+  color: #155d35;
+}
+
+.tryAgain {
+  background: #fff1df;
+  color: #7a4700;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.savedMessage {
+  background: var(--ifm-color-primary-lightest);
+  border-left: 4px solid var(--ifm-color-primary);
+  border-radius: 0.5rem;
+  display: grid;
+  gap: 0.2rem;
+  margin-top: 1rem;
+  padding: 1rem;
+}
+
+@media screen and (max-width: 700px) {
+  .hero {
+    padding: 2.75rem 1rem;
+  }
+
+  .content {
+    padding-inline: 1rem;
+  }
+
+  .step {
+    grid-template-columns: 1fr;
+    padding: 1.25rem;
+  }
+
+  .questionGrid,
+  .discoveryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .actions :global(.button) {
+    width: 100%;
+  }
+}

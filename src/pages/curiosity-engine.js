@@ -1,4 +1,6 @@
-import {useState} from 'react';
+import {useMemo, useState} from 'react';
+import {useHistory, useLocation} from '@docusaurus/router';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
 import styles from './curiosity-engine.module.css';
@@ -37,8 +39,15 @@ const paths = [
 ];
 
 export default function CuriosityEngine() {
-  const [curiosity, setCuriosity] = useState('');
-  const [topic, setTopic] = useState('');
+  const history = useHistory();
+  const location = useLocation();
+  const learnUrl = useBaseUrl('/curiosity-engine/learn');
+  const initialTopic = useMemo(() => {
+    const value = new URLSearchParams(location.search).get('topic');
+    return value?.trim() || '';
+  }, [location.search]);
+  const [curiosity, setCuriosity] = useState(initialTopic);
+  const [topic, setTopic] = useState(initialTopic);
   const [selectedPath, setSelectedPath] = useState(null);
 
   function explore(event) {
@@ -47,6 +56,15 @@ export default function CuriosityEngine() {
     if (!nextTopic) return;
     setTopic(nextTopic);
     setSelectedPath(null);
+  }
+
+  function choosePath(path) {
+    if (path.key === 'learn') {
+      history.push(`${learnUrl}?topic=${encodeURIComponent(topic)}`);
+      return;
+    }
+
+    setSelectedPath(path.key);
   }
 
   return (
@@ -97,7 +115,7 @@ export default function CuriosityEngine() {
                     key={path.key}
                     type="button"
                     className={`${styles.pathCard} ${selectedPath === path.key ? styles.selected : ''}`}
-                    onClick={() => setSelectedPath(path.key)}
+                    onClick={() => choosePath(path)}
                     aria-pressed={selectedPath === path.key}>
                     <span className={styles.pathIcon} aria-hidden="true">{path.icon}</span>
                     <span className={styles.pathTitle}>{path.title}</span>
