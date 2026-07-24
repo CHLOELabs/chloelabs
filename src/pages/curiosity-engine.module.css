@@ -1,0 +1,181 @@
+.page {
+  min-height: 70vh;
+}
+
+.hero {
+  background: var(--ifm-color-primary);
+  color: white;
+  padding: 5rem 1rem;
+  text-align: center;
+}
+
+.hero :global(.container) {
+  max-width: 900px;
+}
+
+.hero h1 {
+  color: white;
+  font-size: clamp(2.4rem, 7vw, 4.5rem);
+  margin-bottom: 1rem;
+}
+
+.eyebrow {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.intro {
+  font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+  margin: 0 auto 2.5rem;
+  max-width: 700px;
+}
+
+.form {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 18px 45px rgba(2, 37, 50, 0.22);
+  color: var(--ifm-color-emphasis-900);
+  padding: 1.5rem;
+  text-align: left;
+}
+
+.label {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.inputRow {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.input {
+  border: 2px solid var(--ifm-color-emphasis-300);
+  border-radius: 0.6rem;
+  flex: 1;
+  font: inherit;
+  min-width: 0;
+  padding: 0.85rem 1rem;
+}
+
+.input:focus {
+  border-color: var(--ifm-color-primary-dark);
+  box-shadow: 0 0 0 3px rgba(3, 160, 181, 0.2);
+  outline: none;
+}
+
+.results,
+.howItWorks {
+  padding: 4rem 1rem;
+  text-align: center;
+}
+
+.results :global(.container),
+.howItWorks :global(.container) {
+  max-width: 1100px;
+}
+
+.pathGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin-top: 2rem;
+}
+
+.pathCard {
+  background: white;
+  border: 2px solid var(--ifm-color-emphasis-200);
+  border-radius: 1rem;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1.25rem;
+  text-align: left;
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+
+.pathCard:hover,
+.pathCard:focus-visible,
+.selected {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 10px 28px rgba(2, 37, 50, 0.12);
+  transform: translateY(-3px);
+}
+
+.pathCard:focus-visible {
+  outline: 3px solid rgba(3, 160, 181, 0.35);
+  outline-offset: 2px;
+}
+
+.pathIcon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.pathTitle {
+  color: var(--ifm-color-primary-darkest);
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.pathPrompt {
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.nextStep {
+  background: var(--ifm-color-primary-lighter);
+  border-radius: 1rem;
+  margin: 2rem auto 0;
+  max-width: 760px;
+  padding: 1.5rem;
+}
+
+.nextStep h3 {
+  margin-bottom: 0.5rem;
+}
+
+.prototypeNote {
+  font-size: 0.9rem;
+  margin-bottom: 0;
+  opacity: 0.75;
+}
+
+.howItWorks p {
+  font-size: 1.1rem;
+  margin-inline: auto;
+  max-width: 650px;
+}
+
+@media screen and (max-width: 996px) {
+  .pathGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .hero {
+    padding: 3.5rem 1rem;
+  }
+
+  .inputRow {
+    flex-direction: column;
+  }
+
+  .inputRow :global(.button) {
+    width: 100%;
+  }
+
+  .pathGrid {
+    grid-template-columns: 1fr;
+  }
+}
