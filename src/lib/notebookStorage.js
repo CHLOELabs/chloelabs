@@ -36,6 +36,13 @@ export function readNotebook() {
   );
 }
 
+export function readNotebookEntry(path, id) {
+  return readNotebook().find(
+    (entry) =>
+      entry.notebookPath === path && entry.notebookId === String(id || ''),
+  );
+}
+
 export function deleteNotebookEntry(entry) {
   const entries = readArray(entry.notebookKey);
   const next = entries.filter(
@@ -43,6 +50,34 @@ export function deleteNotebookEntry(entry) {
       String(candidate.id ?? `${entry.notebookPath}-${index}`) !==
       entry.notebookId,
   );
+  window.localStorage.setItem(entry.notebookKey, JSON.stringify(next));
+  announceNotebookChange();
+}
+
+export function upsertNotebookEntry(notebookKey, entry) {
+  const entries = readArray(notebookKey);
+  const id = String(entry.id);
+  const index = entries.findIndex((candidate) => String(candidate.id) === id);
+  const next =
+    index === -1
+      ? [...entries, entry]
+      : entries.map((candidate, candidateIndex) =>
+          candidateIndex === index ? {...candidate, ...entry} : candidate,
+        );
+  window.localStorage.setItem(notebookKey, JSON.stringify(next));
+  announceNotebookChange();
+}
+
+export function renameNotebookEntry(entry, customTitle) {
+  const entries = readArray(entry.notebookKey);
+  const next = entries.map((candidate, index) => {
+    const candidateId = String(
+      candidate.id ?? `${entry.notebookPath}-${index}`,
+    );
+    return candidateId === entry.notebookId
+      ? {...candidate, customTitle: customTitle.trim()}
+      : candidate;
+  });
   window.localStorage.setItem(entry.notebookKey, JSON.stringify(next));
   announceNotebookChange();
 }

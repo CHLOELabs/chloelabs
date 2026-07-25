@@ -6,6 +6,7 @@ import {
   deleteNotebookEntry,
   exportNotebookBackup,
   importNotebookBackup,
+  renameNotebookEntry,
   readNotebook,
 } from '../lib/notebookStorage';
 import styles from './my-lab-notebook.module.css';
@@ -64,6 +65,14 @@ export default function MyLabNotebook() {
     deleteNotebookEntry(entry);
     if (expandedId === entry.notebookId) setExpandedId('');
     setMessage(`${title} was deleted.`);
+  }
+
+  function renameEntry(entry) {
+    const title = window.prompt('Name this notebook entry:', getTitle(entry));
+    if (title === null || !title.trim()) return;
+    renameNotebookEntry(entry, title);
+    refresh();
+    setMessage(`Notebook entry renamed to “${title.trim()}.”`);
   }
 
   function downloadBackup() {
@@ -190,6 +199,7 @@ export default function MyLabNotebook() {
                       key={`${entry.notebookPath}-${entry.notebookId}`}
                       onDelete={() => removeEntry(entry)}
                       onExport={() => exportEntry(entry)}
+                      onRename={() => renameEntry(entry)}
                       onToggle={() =>
                         setExpandedId((current) =>
                           current === entry.notebookId
@@ -227,7 +237,14 @@ function FilterButton({active, count, label, onClick}) {
   );
 }
 
-function NotebookCard({entry, expanded, onDelete, onExport, onToggle}) {
+function NotebookCard({
+  entry,
+  expanded,
+  onDelete,
+  onExport,
+  onRename,
+  onToggle,
+}) {
   const path = PATHS[entry.notebookPath];
   const summary = getSummary(entry);
   return (
@@ -243,11 +260,18 @@ function NotebookCard({entry, expanded, onDelete, onExport, onToggle}) {
       <p className={styles.topic}>Topic: {entry.topic || 'Untitled curiosity'}</p>
       <p>{summary}</p>
       <div className={styles.cardActions}>
+        <Link
+          to={`/curiosity-engine/${entry.notebookPath}?topic=${encodeURIComponent(entry.topic || '')}&resume=${encodeURIComponent(entry.notebookId)}`}>
+          Continue working
+        </Link>
         <button aria-expanded={expanded} onClick={onToggle} type="button">
           {expanded ? 'Hide details' : 'Open details'}
         </button>
         <button onClick={onExport} type="button">
           Export
+        </button>
+        <button onClick={onRename} type="button">
+          Rename
         </button>
         <button className={styles.deleteButton} onClick={onDelete} type="button">
           Delete
@@ -322,6 +346,7 @@ function NotebookComet() {
 
 function getTitle(entry) {
   return (
+    entry.customTitle ||
     entry.question ||
     entry.project?.title ||
     entry.idea?.title ||

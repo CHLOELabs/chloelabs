@@ -1,8 +1,11 @@
-import {useEffect, useMemo, useState} from 'react';
+import {useMemo, useState} from 'react';
 import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
 import Link from '@docusaurus/Link';
 import {useLocation} from '@docusaurus/router';
+import DraftControls from '../../components/DraftControls';
+import {upsertNotebookEntry} from '../../lib/notebookStorage';
+import {useBrowserDraft} from '../../lib/useBrowserDraft';
 import styles from './build.module.css';
 
 const API_URL = 'https://chloelabs-learn-api.chloelabs-amanda.workers.dev';
@@ -32,6 +35,10 @@ export default function BuildPath() {
     const value = new URLSearchParams(location.search).get('topic');
     return value?.trim() || 'something interesting';
   }, [location.search]);
+  const resumeId = useMemo(
+    () => new URLSearchParams(location.search).get('resume') || '',
+    [location.search],
+  );
   const [buildType, setBuildType] = useState('help me choose');
   const [time, setTime] = useState('a few hours');
   const [difficulty, setDifficulty] = useState('growing');
@@ -45,45 +52,68 @@ export default function BuildPath() {
   const [testNotes, setTestNotes] = useState('');
   const [improvement, setImprovement] = useState('');
   const [saved, setSaved] = useState(false);
-  const draftKey = `chloelabs:build-draft:v1:${topic.toLowerCase()}`;
-
-  useEffect(() => {
-    try {
-      const draft = JSON.parse(window.localStorage.getItem(draftKey) || '{}');
-      if (draft.selectedIdea) setSelectedIdea(draft.selectedIdea);
-      if (Array.isArray(draft.completedSteps)) {
-        setCompletedSteps(draft.completedSteps);
-      }
-      if (typeof draft.buildNotes === 'string') setBuildNotes(draft.buildNotes);
-      if (typeof draft.testNotes === 'string') setTestNotes(draft.testNotes);
-      if (typeof draft.improvement === 'string') {
-        setImprovement(draft.improvement);
-      }
-    } catch {
-      // A damaged browser draft should never block a new build.
-    }
-  }, [draftKey]);
-
-  useEffect(() => {
-    if (!selectedIdea) return;
-    window.localStorage.setItem(
-      draftKey,
-      JSON.stringify({
-        selectedIdea,
-        completedSteps,
-        buildNotes,
-        testNotes,
-        improvement,
-      }),
-    );
-  }, [
-    buildNotes,
-    completedSteps,
-    draftKey,
-    improvement,
-    selectedIdea,
-    testNotes,
-  ]);
+  const draftSnapshot = useMemo(
+    () => ({
+      buildType,
+      time,
+      difficulty,
+      tools,
+      ideas,
+      selectedIdea,
+      completedSteps,
+      buildNotes,
+      testNotes,
+      improvement,
+      saved,
+    }),
+    [
+      buildNotes,
+      buildType,
+      completedSteps,
+      difficulty,
+      ideas,
+      improvement,
+      saved,
+      selectedIdea,
+      testNotes,
+      time,
+      tools,
+    ],
+  );
+  const draft = useBrowserDraft({
+    path: 'build',
+    topic,
+    resumeId,
+    snapshot: draftSnapshot,
+    resumeToDraft: (entry) => ({
+      buildType: 'help me choose',
+      time: 'a few hours',
+      difficulty: 'growing',
+      tools: ['household materials'],
+      ideas: entry.project ? [entry.project] : [],
+      selectedIdea: entry.project || null,
+      completedSteps: entry.completedSteps || [],
+      buildNotes: entry.buildNotes || '',
+      testNotes: entry.testNotes || '',
+      improvement: entry.improvement || '',
+      saved: true,
+    }),
+    restore: (data) => {
+      setBuildType(data.buildType || 'help me choose');
+      setTime(data.time || 'a few hours');
+      setDifficulty(data.difficulty || 'growing');
+      setTools(Array.isArray(data.tools) ? data.tools : ['household materials']);
+      setIdeas(Array.isArray(data.ideas) ? data.ideas : []);
+      setSelectedIdea(data.selectedIdea || null);
+      setCompletedSteps(
+        Array.isArray(data.completedSteps) ? data.completedSteps : [],
+      );
+      setBuildNotes(data.buildNotes || '');
+      setTestNotes(data.testNotes || '');
+      setImprovement(data.improvement || '');
+      setSaved(Boolean(data.saved));
+    },
+  });
 
   const stage = saved
     ? 6
@@ -159,16 +189,8 @@ export default function BuildPath() {
 
   function saveBuild() {
     if (!selectedIdea || !testNotes.trim() || !improvement.trim()) return;
-    const notebook = JSON.parse(
-      window.localStorage.getItem(NOTEBOOK_KEY) || '[]',
-    );
-    const entries = Array.isArray(notebook) ? notebook : [];
-    window.localStorage.setItem(
-      NOTEBOOK_KEY,
-      JSON.stringify([
-        ...entries,
-        {
-          id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    upsertNotebookEntry(NOTEBOOK_KEY, {
+          id: draft.projectId,
           topic,
           project: selectedIdea,
           completedSteps,
@@ -176,10 +198,26 @@ export default function BuildPath() {
           testNotes: testNotes.trim(),
           improvement: improvement.trim(),
           savedAt: new Date().toISOString(),
-        },
-      ]),
-    );
+        });
     setSaved(true);
+  }
+
+  function startOver() {
+    if (!window.confirm('Start this build over? Your notebook entry will stay saved.')) return;
+    draft.clearDraft();
+    setBuildType('help me choose');
+    setTime('a few hours');
+    setDifficulty('growing');
+    setTools(['household materials']);
+    setIdeas([]);
+    setSelectedIdea(null);
+    setStatus('idle');
+    setError('');
+    setCompletedSteps([]);
+    setBuildNotes('');
+    setTestNotes('');
+    setImprovement('');
+    setSaved(false);
   }
 
   return (
@@ -201,6 +239,12 @@ export default function BuildPath() {
         </header>
 
         <div className={`container ${styles.content}`}>
+          <DraftControls
+            noun="build"
+            onStartOver={startOver}
+            restored={draft.restored}
+            status={draft.status}
+          />
           <BuildJourney stage={stage} />
 
           <section className={styles.panel}>

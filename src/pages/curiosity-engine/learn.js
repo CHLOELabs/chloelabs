@@ -3,13 +3,15 @@ import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
 import Link from '@docusaurus/Link';
 import {useLocation} from '@docusaurus/router';
+import DraftControls from '../../components/DraftControls';
+import {upsertNotebookEntry} from '../../lib/notebookStorage';
+import {useBrowserDraft} from '../../lib/useBrowserDraft';
 import styles from './learn.module.css';
 
 const LEARN_API_URL =
   'https://chloelabs-learn-api.chloelabs-amanda.workers.dev';
 const DEFAULT_TOPIC = 'something interesting';
 const AGE_BAND = '10-12';
-const LEARNING_DRAFT_PREFIX = 'chloelabs:learn-draft:v1:';
 const LAB_NOTEBOOK_KEY = 'chloelabs:lab-notebook:v1';
 const LEARNING_STAGES = [
   {label: 'Start', icon: 'spark'},
@@ -25,10 +27,13 @@ export default function LearnPath() {
     const value = new URLSearchParams(location.search).get('topic');
     return value?.trim() || DEFAULT_TOPIC;
   }, [location.search]);
+  const resumeId = useMemo(
+    () => new URLSearchParams(location.search).get('resume') || '',
+    [location.search],
+  );
 
   const [priorKnowledge, setPriorKnowledge] = useState('');
   const [thinkingChange, setThinkingChange] = useState('');
-  const [loadedDraftKey, setLoadedDraftKey] = useState('');
   const [storageMessage, setStorageMessage] = useState('');
   const [questions, setQuestions] = useState([]);
   const [questionsStatus, setQuestionsStatus] = useState('loading');
@@ -45,10 +50,58 @@ export default function LearnPath() {
 
   const activeQuestion =
     selectedQuestion === 'custom' ? customQuestion.trim() : selectedQuestion;
-  const draftKey = useMemo(
-    () => `${LEARNING_DRAFT_PREFIX}${topic.toLocaleLowerCase()}`,
-    [topic],
+  const draftSnapshot = useMemo(
+    () => ({
+      priorKnowledge,
+      thinkingChange,
+      selectedQuestion,
+      customQuestion,
+      discovery,
+      answer,
+      checkedAnswer,
+      explanation,
+      saved,
+    }),
+    [
+      answer,
+      checkedAnswer,
+      customQuestion,
+      discovery,
+      explanation,
+      priorKnowledge,
+      saved,
+      selectedQuestion,
+      thinkingChange,
+    ],
   );
+  const draft = useBrowserDraft({
+    path: 'learn',
+    topic,
+    resumeId,
+    snapshot: draftSnapshot,
+    resumeToDraft: (entry) => ({
+      priorKnowledge: entry.startingIdeas || '',
+      thinkingChange: entry.thinkingChange || '',
+      selectedQuestion: entry.question || '',
+      customQuestion: '',
+      discovery: null,
+      answer: null,
+      checkedAnswer: false,
+      explanation: entry.explanation || '',
+      saved: true,
+    }),
+    restore: (data) => {
+      setPriorKnowledge(data.priorKnowledge || '');
+      setThinkingChange(data.thinkingChange || '');
+      setSelectedQuestion(data.selectedQuestion || '');
+      setCustomQuestion(data.customQuestion || '');
+      setDiscovery(data.discovery || null);
+      setAnswer(data.answer || null);
+      setCheckedAnswer(Boolean(data.checkedAnswer));
+      setExplanation(data.explanation || '');
+      setSaved(Boolean(data.saved));
+    },
+  });
   const currentStage = saved
     ? 5
     : discovery && checkedAnswer
@@ -60,47 +113,6 @@ export default function LearnPath() {
           : activeQuestion
             ? 2
             : 1;
-
-  useEffect(() => {
-    setStorageMessage('');
-
-    try {
-      const storedDraft = window.localStorage.getItem(draftKey);
-      const draft = storedDraft ? JSON.parse(storedDraft) : {};
-      setPriorKnowledge(
-        typeof draft.priorKnowledge === 'string' ? draft.priorKnowledge : '',
-      );
-      setThinkingChange(
-        typeof draft.thinkingChange === 'string' ? draft.thinkingChange : '',
-      );
-    } catch {
-      setPriorKnowledge('');
-      setThinkingChange('');
-      setStorageMessage(
-        'This browser could not restore your saved starting ideas.',
-      );
-    } finally {
-      setLoadedDraftKey(draftKey);
-    }
-  }, [draftKey]);
-
-  useEffect(() => {
-    if (loadedDraftKey !== draftKey) return;
-
-    try {
-      const draft = {priorKnowledge, thinkingChange};
-      if (priorKnowledge.trim() || thinkingChange.trim()) {
-        window.localStorage.setItem(draftKey, JSON.stringify(draft));
-      } else {
-        window.localStorage.removeItem(draftKey);
-      }
-      setStorageMessage('');
-    } catch {
-      setStorageMessage(
-        'This browser could not save your starting ideas. Keep this page open so you do not lose them.',
-      );
-    }
-  }, [draftKey, loadedDraftKey, priorKnowledge, thinkingChange]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -172,11 +184,8 @@ export default function LearnPath() {
     if (!explanation.trim() || !thinkingChange.trim()) return;
 
     try {
-      const storedNotebook = window.localStorage.getItem(LAB_NOTEBOOK_KEY);
-      const notebook = storedNotebook ? JSON.parse(storedNotebook) : [];
-      const entries = Array.isArray(notebook) ? notebook : [];
       const entry = {
-        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        id: draft.projectId,
         topic,
         question: activeQuestion,
         startingIdeas: priorKnowledge.trim(),
@@ -184,10 +193,7 @@ export default function LearnPath() {
         thinkingChange: thinkingChange.trim(),
         savedAt: new Date().toISOString(),
       };
-      window.localStorage.setItem(
-        LAB_NOTEBOOK_KEY,
-        JSON.stringify([...entries, entry]),
-      );
+      upsertNotebookEntry(LAB_NOTEBOOK_KEY, entry);
       setSaved(true);
       setStorageMessage('');
     } catch {
@@ -203,11 +209,21 @@ export default function LearnPath() {
     setThinkingChange('');
     setSaved(false);
     try {
-      window.localStorage.removeItem(draftKey);
       setStorageMessage('');
     } catch {
       setStorageMessage('This browser could not clear the saved draft.');
     }
+  }
+
+  function startOver() {
+    if (!window.confirm('Start this learning project over? Your notebook entry will stay saved.')) return;
+    draft.clearDraft();
+    setPriorKnowledge('');
+    setThinkingChange('');
+    setSelectedQuestion('');
+    setCustomQuestion('');
+    resetDiscovery();
+    setStorageMessage('');
   }
 
   return (
@@ -232,6 +248,12 @@ export default function LearnPath() {
         </header>
 
         <div className={`container ${styles.content}`}>
+          <DraftControls
+            noun="learning project"
+            onStartOver={startOver}
+            restored={draft.restored}
+            status={draft.status}
+          />
           <aside className={styles.aiNotice}>
             <strong>AI-guided, human-powered</strong>
             <span>

@@ -4,6 +4,9 @@ import Heading from '@theme/Heading';
 import Link from '@docusaurus/Link';
 import {useLocation} from '@docusaurus/router';
 import CometGuide from '../../components/CometGuide';
+import DraftControls from '../../components/DraftControls';
+import {upsertNotebookEntry} from '../../lib/notebookStorage';
+import {useBrowserDraft} from '../../lib/useBrowserDraft';
 import styles from './investigate.module.css';
 
 const API_URL = 'https://chloelabs-learn-api.chloelabs-amanda.workers.dev';
@@ -15,6 +18,7 @@ const emptyRow = () => ({trial: '', condition: '', observation: '', measurement:
 export default function InvestigatePath() {
   const location = useLocation();
   const topic = useMemo(() => new URLSearchParams(location.search).get('topic')?.trim() || 'something interesting', [location.search]);
+  const resumeId = useMemo(() => new URLSearchParams(location.search).get('resume') || '', [location.search]);
   const [investigationType, setType] = useState('help me choose');
   const [time, setTime] = useState('one day');
   const [setting, setSetting] = useState('indoors');
@@ -29,6 +33,26 @@ export default function InvestigatePath() {
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
+  const draftSnapshot = useMemo(() => ({
+    investigationType, time, setting, ideas, idea, prediction, rows,
+    claim, evidence, reasoning, uncertainty, saved,
+  }), [investigationType, time, setting, ideas, idea, prediction, rows, claim, evidence, reasoning, uncertainty, saved]);
+  const draft = useBrowserDraft({
+    path: 'investigate', topic, resumeId, snapshot: draftSnapshot,
+    resumeToDraft: (entry) => ({investigationType:'help me choose',time:'one day',setting:'indoors',ideas:entry.idea?[entry.idea]:[],idea:entry.idea||null,prediction:entry.prediction||'',rows:entry.rows||[emptyRow(),emptyRow(),emptyRow()],claim:entry.claim||'',evidence:entry.evidence||'',reasoning:entry.reasoning||'',uncertainty:entry.uncertainty||'',saved:true}),
+    restore: (data) => {
+      setType(data.investigationType || 'help me choose');
+      setTime(data.time || 'one day');
+      setSetting(data.setting || 'indoors');
+      setIdeas(Array.isArray(data.ideas) ? data.ideas : []);
+      setIdea(data.idea || null);
+      setPrediction(data.prediction || '');
+      setRows(Array.isArray(data.rows) && data.rows.length ? data.rows : [emptyRow(), emptyRow(), emptyRow()]);
+      setClaim(data.claim || ''); setEvidence(data.evidence || '');
+      setReasoning(data.reasoning || ''); setUncertainty(data.uncertainty || '');
+      setSaved(Boolean(data.saved));
+    },
+  });
 
   async function generateIdeas() {
     setStatus('loading'); setError(''); setIdeas([]); setIdea(null);
@@ -71,11 +95,16 @@ export default function InvestigatePath() {
 
   function saveInvestigation() {
     if (!claim.trim() || !evidence.trim() || !reasoning.trim()) return;
-    const key = 'chloelabs:investigation-notebook:v1';
-    let notebook = [];
-    try { const stored = JSON.parse(localStorage.getItem(key) || '[]'); notebook = Array.isArray(stored) ? stored : []; } catch {}
-    localStorage.setItem(key, JSON.stringify([...notebook, {id: Date.now(), topic, idea, prediction, rows, claim, evidence, reasoning, uncertainty, savedAt: new Date().toISOString()}]));
+    upsertNotebookEntry('chloelabs:investigation-notebook:v1', {id: draft.projectId, topic, idea, prediction, rows, claim, evidence, reasoning, uncertainty, savedAt: new Date().toISOString()});
     setSaved(true);
+  }
+
+  function startOver() {
+    if (!window.confirm('Start this investigation over? Your notebook entry will stay saved.')) return;
+    draft.clearDraft(); setType('help me choose'); setTime('one day'); setSetting('indoors');
+    setIdeas([]); setIdea(null); setPrediction(''); setRows([emptyRow(), emptyRow(), emptyRow()]);
+    setClaim(''); setEvidence(''); setReasoning(''); setUncertainty('');
+    setStatus('idle'); setError(''); setSaved(false);
   }
 
   return (
@@ -87,6 +116,7 @@ export default function InvestigatePath() {
           <p>Ask a testable question. Gather evidence. Decide what it supports.</p>
         </div></header>
         <div className={`container ${styles.content}`}>
+          <DraftControls noun="investigation" onStartOver={startOver} restored={draft.restored} status={draft.status} />
           <Journey stage={stage} />
           <CometGuide {...cometState} />
           <Panel number="1" title="Design your investigation">

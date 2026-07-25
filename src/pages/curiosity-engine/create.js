@@ -4,6 +4,9 @@ import Heading from '@theme/Heading';
 import Link from '@docusaurus/Link';
 import {useLocation} from '@docusaurus/router';
 import CometGuide from '../../components/CometGuide';
+import DraftControls from '../../components/DraftControls';
+import {upsertNotebookEntry} from '../../lib/notebookStorage';
+import {useBrowserDraft} from '../../lib/useBrowserDraft';
 import styles from './creativePaths.module.css';
 
 const API='https://chloelabs-learn-api.chloelabs-amanda.workers.dev';
@@ -13,17 +16,21 @@ const times=['30 minutes','a few hours','several days'];
 export default function CreatePath(){
   const location=useLocation();
   const topic=useMemo(()=>new URLSearchParams(location.search).get('topic')?.trim()||'something interesting',[location.search]);
+  const resumeId=useMemo(()=>new URLSearchParams(location.search).get('resume')||'',[location.search]);
   const [format,setFormat]=useState('help me choose'),[time,setTime]=useState('a few hours');
   const [ideas,setIdeas]=useState([]),[idea,setIdea]=useState(null),[drafts,setDrafts]=useState([]),[reflection,setReflection]=useState('');
   const [status,setStatus]=useState('idle'),[error,setError]=useState(''),[saved,setSaved]=useState(false);
+  const draftSnapshot=useMemo(()=>({format,time,ideas,idea,drafts,reflection,saved}),[format,time,ideas,idea,drafts,reflection,saved]);
+  const draft=useBrowserDraft({path:'create',topic,resumeId,snapshot:draftSnapshot,resumeToDraft:(entry)=>({format:entry.idea?.format||'help me choose',time:'a few hours',ideas:entry.idea?[entry.idea]:[],idea:entry.idea||null,drafts:entry.drafts||[],reflection:entry.reflection||'',saved:true}),restore:(data)=>{setFormat(data.format||'help me choose');setTime(data.time||'a few hours');setIdeas(Array.isArray(data.ideas)?data.ideas:[]);setIdea(data.idea||null);setDrafts(Array.isArray(data.drafts)?data.drafts:[]);setReflection(data.reflection||'');setSaved(Boolean(data.saved))}});
   const completed=drafts.filter((value)=>value?.trim()).length;
   async function generate(){setStatus('loading');setError('');setIdea(null);try{const response=await fetch(`${API}/api/create/ideas`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic,ageBand:'10-12',format,time})});const result=await response.json();if(!response.ok)throw new Error(result.error||'Could not open the idea studio.');setIdeas(result.ideas);setStatus('ready')}catch(e){setError(e.message);setStatus('error')}}
   function choose(next){setIdea(next);setDrafts(next.steps.map(()=>''));setReflection('');setSaved(false)}
-  function save(){if(!idea||!reflection.trim())return;const key='chloelabs:create-notebook:v1';let entries=[];try{const data=JSON.parse(localStorage.getItem(key)||'[]');entries=Array.isArray(data)?data:[]}catch{}localStorage.setItem(key,JSON.stringify([...entries,{id:Date.now(),topic,idea,drafts,reflection,savedAt:new Date().toISOString()}]));setSaved(true)}
+  function save(){if(!idea||!reflection.trim())return;upsertNotebookEntry('chloelabs:create-notebook:v1',{id:draft.projectId,topic,idea,drafts,reflection,savedAt:new Date().toISOString()});setSaved(true)}
+  function startOver(){if(!window.confirm('Start this creation over? Your notebook entry will stay saved.'))return;draft.clearDraft();setFormat('help me choose');setTime('a few hours');setIdeas([]);setIdea(null);setDrafts([]);setReflection('');setStatus('idle');setError('');setSaved(false)}
   const message=saved?'Your creation is saved! You took an idea through drafting and revision—studio magic complete.':idea?completed?`${completed} of ${idea.steps.length} creative stars are glowing. Keep making choices that feel like yours.`:'The storyboard is ready. I supplied the structure; you supply every original idea.':ideas.length?'Pick the concept that makes your imagination start moving.':'Choose a format and I’ll help you find three ways to transform curiosity into something original.';
   return <Layout title={`Create something about ${topic}`}><main className={`${styles.page} ${styles.createPage}`}>
     <header className={styles.hero}><div className="container"><Link className={styles.back} to={`/curiosity-engine?topic=${encodeURIComponent(topic)}`}>← Choose another path</Link><span>Create path</span><Heading as="h1">Create with {topic}</Heading><p>Imagine it. Draft it. Shape it into something only you would make.</p></div></header>
-    <div className={`container ${styles.content}`}><CometGuide role="studio" mood={saved?'celebrate':'thinking'} badge={saved?'Creation saved':'Idea studio'} message={message}/>
+    <div className={`container ${styles.content}`}><DraftControls noun="creation" onStartOver={startOver} restored={draft.restored} status={draft.status}/><CometGuide role="studio" mood={saved?'celebrate':'thinking'} badge={saved?'Creation saved':'Idea studio'} message={message}/>
       <Panel n="1" title="Choose your creative canvas"><Chooser label="What might you create?" options={formats} value={format} set={setFormat}/><Chooser label="How much time?" options={times} value={time} set={setTime}/><button className="button button--primary button--lg" disabled={status==='loading'} onClick={generate}>{status==='loading'?'Mixing possibilities…':'Create three concepts'}</button>{error&&<p className={styles.error}>{error}</p>}</Panel>
       {ideas.length>0&&<Panel n="2" title="Choose your creative spark"><div className={styles.ideaGrid}>{ideas.map((item,index)=><button key={item.title} className={`${styles.idea} ${idea?.title===item.title?styles.selected:''}`} onClick={()=>choose(item)} aria-pressed={idea?.title===item.title}><b>✦ 0{index+1}</b><small>{item.format}</small><strong>{item.title}</strong><span>{item.concept}</span></button>)}</div></Panel>}
       {idea&&<><CreativeConstellation steps={idea.steps} drafts={drafts}/><Panel n="3" title="Build your storyboard"><div className={styles.prompt}><small>Creative spark—not finished content</small><p>{idea.creativePrompt}</p></div><div className={styles.storyboard}>{idea.steps.map((step,index)=><label key={step}><span><b>{index+1}</b>{step}</span><textarea value={drafts[index]} onChange={e=>setDrafts(current=>current.map((v,i)=>i===index?e.target.value:v))} placeholder="My original idea…" rows={3}/></label>)}</div></Panel>
