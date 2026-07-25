@@ -60,6 +60,102 @@
   padding: 1rem 1.2rem;
 }
 
+.journey {
+  background: var(--ifm-background-color);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(2, 37, 50, 0.07);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  padding: 1.25rem 1.5rem 1.35rem;
+}
+
+.journeyHeading {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.journeyHeading span {
+  color: var(--ifm-color-primary-darkest);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.journeyTrack {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+.journeyTrack::before {
+  background: var(--ifm-color-emphasis-300);
+  content: '';
+  height: 3px;
+  left: 10%;
+  position: absolute;
+  right: 10%;
+  top: 1.35rem;
+}
+
+.journeyStage {
+  align-items: center;
+  color: var(--ifm-color-emphasis-600);
+  display: flex;
+  flex-direction: column;
+  font-size: 0.78rem;
+  font-weight: 750;
+  gap: 0.5rem;
+  position: relative;
+  text-align: center;
+  z-index: 1;
+}
+
+.journeyIcon {
+  align-items: center;
+  background: var(--ifm-background-color);
+  border: 3px solid var(--ifm-color-emphasis-300);
+  border-radius: 50%;
+  display: flex;
+  height: 2.75rem;
+  justify-content: center;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+  width: 2.75rem;
+}
+
+.journeyIcon svg {
+  height: 1.2rem;
+  width: 1.2rem;
+}
+
+.journeyComplete,
+.journeyCurrent {
+  color: var(--ifm-color-primary-darkest);
+}
+
+.journeyComplete .journeyIcon {
+  background: var(--ifm-color-primary);
+  border-color: var(--ifm-color-primary);
+  color: white;
+}
+
+.journeyCurrent .journeyIcon {
+  background: #fff7e9;
+  border-color: #f28c28;
+  color: #b85b00;
+  transform: scale(1.08);
+}
+
 .step {
   background: var(--ifm-background-color);
   border: 1px solid var(--ifm-color-emphasis-200);
@@ -164,29 +260,195 @@
   font-weight: 800;
 }
 
-.discoveryGrid {
+.discoveryExplorer {
+  align-items: center;
+  background:
+    radial-gradient(circle at 25% 50%, rgba(3, 160, 181, 0.12), transparent 34%),
+    var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 1rem;
   display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.discoveryCard {
-  background: var(--ifm-color-primary-lightest);
-  border-radius: 0.8rem;
+  gap: 1.5rem;
+  grid-template-columns: minmax(300px, 0.9fr) minmax(260px, 1.1fr);
+  margin-top: 1rem;
+  overflow: hidden;
   padding: 1.25rem;
 }
 
-.discoveryCard span {
+.interactionHint {
+  font-size: 0.85rem;
+  font-weight: 650;
+  margin: 0 0 0.25rem;
+  text-align: center;
+}
+
+.discoveryOrbit {
+  height: 290px;
+  margin: 0 auto;
+  max-width: 330px;
+  position: relative;
+}
+
+.orbitLine {
+  border: 2px dashed rgba(3, 160, 181, 0.32);
+  border-radius: 50%;
+  height: 210px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 210px;
+}
+
+.topicCore {
+  align-items: center;
+  background: var(--ifm-color-primary);
+  border: 7px solid var(--ifm-background-color);
+  border-radius: 50%;
+  box-shadow: 0 12px 30px rgba(3, 106, 121, 0.25);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  height: 118px;
+  justify-content: center;
+  left: 50%;
+  padding: 0.75rem;
+  position: absolute;
+  text-align: center;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 118px;
+  z-index: 1;
+}
+
+.topicCore svg {
+  height: 1.65rem;
+  width: 1.65rem;
+}
+
+.topicCore strong {
+  display: -webkit-box;
+  font-size: 0.88rem;
+  line-height: 1.15;
+  max-width: 88px;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.orbitButton {
+  align-items: center;
+  background: var(--ifm-background-color);
+  border: 2px solid var(--ifm-color-emphasis-300);
+  border-radius: 999px;
+  box-shadow: 0 7px 16px rgba(2, 37, 50, 0.1);
+  color: var(--ifm-font-color-base);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 750;
+  gap: 0.35rem;
+  padding: 0.55rem 0.75rem;
+  position: absolute;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+  z-index: 2;
+}
+
+.orbitButton svg {
+  color: var(--ifm-color-primary);
+  height: 1.15rem;
+  width: 1.15rem;
+}
+
+.orbitButton1 {
+  left: 50%;
+  top: 0.6rem;
+  transform: translateX(-50%);
+}
+
+.orbitButton2 {
+  right: 0;
+  top: 62%;
+  transform: translateY(-50%);
+}
+
+.orbitButton3 {
+  bottom: 0.5rem;
+  left: 0.2rem;
+}
+
+.orbitButton:hover,
+.orbitButton:focus-visible,
+.orbitButtonActive {
+  border-color: #f28c28;
+  box-shadow: 0 8px 20px rgba(242, 140, 40, 0.2);
+  outline: none;
+}
+
+.orbitButton1:hover,
+.orbitButton1:focus-visible,
+.orbitButton1.orbitButtonActive {
+  transform: translateX(-50%) scale(1.06);
+}
+
+.orbitButton2:hover,
+.orbitButton2:focus-visible,
+.orbitButton2.orbitButtonActive {
+  transform: translateY(-50%) scale(1.06);
+}
+
+.orbitButton3:hover,
+.orbitButton3:focus-visible,
+.orbitButton3.orbitButtonActive {
+  transform: scale(1.06);
+}
+
+.discoveryReveal {
+  align-items: flex-start;
+  background: var(--ifm-background-color);
+  border-left: 5px solid #f28c28;
+  border-radius: 0.85rem;
+  box-shadow: 0 12px 30px rgba(2, 37, 50, 0.09);
+  display: flex;
+  gap: 1rem;
+  min-height: 180px;
+  padding: 1.4rem;
+}
+
+.revealIcon {
+  align-items: center;
+  background: #fff1df;
+  border-radius: 50%;
+  color: #b85b00;
+  display: flex;
+  flex: 0 0 auto;
+  height: 2.7rem;
+  justify-content: center;
+  width: 2.7rem;
+}
+
+.revealIcon svg {
+  height: 1.4rem;
+  width: 1.4rem;
+}
+
+.revealLabel {
   color: var(--ifm-color-primary-darkest);
   display: block;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   margin-bottom: 0.6rem;
   text-transform: uppercase;
 }
 
-.discoveryCard p {
+.discoveryReveal p {
+  font-size: 1.06rem;
   margin: 0;
 }
 
@@ -228,23 +490,77 @@
   margin: 0.65rem 0 0;
 }
 
-.startingIdeaReview {
+.thinkingBridge {
+  align-items: stretch;
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: minmax(0, 1fr) 66px minmax(0, 1fr);
+  margin: 1.5rem 0;
+}
+
+.thinkingPanel {
   background: #fff7e9;
-  border-left: 4px solid #f28c28;
-  border-radius: 0.65rem;
-  margin: 1.25rem 0;
-  padding: 1rem 1.1rem;
+  border: 2px solid #f7c98f;
+  border-radius: 0.85rem;
+  min-height: 145px;
+  padding: 1.1rem;
 }
 
-.startingIdeaReview blockquote {
-  border: 0;
-  font-size: 1rem;
-  margin: 0.65rem 0 0;
-  padding: 0;
+.thinkingPanelAfter {
+  background: var(--ifm-color-primary-lightest);
+  border-color: rgba(3, 160, 181, 0.35);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
 
-.startingIdeaReview p {
-  margin: 0.5rem 0 0;
+.thinkingPanelFilled {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 8px 22px rgba(3, 106, 121, 0.12);
+}
+
+.thinkingLabel {
+  color: var(--ifm-color-primary-darkest);
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.65rem;
+  text-transform: uppercase;
+}
+
+.thinkingPanel p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.thinkingArrow {
+  align-items: center;
+  color: var(--ifm-color-emphasis-400);
+  display: flex;
+  justify-content: center;
+  position: relative;
+  transition: color 180ms ease;
+}
+
+.thinkingArrow span {
+  background: currentColor;
+  height: 3px;
+  left: 4px;
+  position: absolute;
+  right: 4px;
+}
+
+.thinkingArrow svg {
+  background: var(--ifm-background-color);
+  height: 2rem;
+  padding: 0.25rem;
+  position: relative;
+  width: 2rem;
+}
+
+.thinkingArrowActive {
+  color: var(--ifm-color-primary);
 }
 
 .sources {
@@ -376,9 +692,75 @@
     padding: 1.25rem;
   }
 
-  .questionGrid,
-  .discoveryGrid {
+  .questionGrid {
     grid-template-columns: 1fr;
+  }
+
+  .journey {
+    padding: 1rem;
+  }
+
+  .journeyHeading {
+    margin-bottom: 0.8rem;
+  }
+
+  .journeyTrack {
+    gap: 0.15rem;
+  }
+
+  .journeyTrack::before {
+    left: 9%;
+    right: 9%;
+    top: 1.05rem;
+  }
+
+  .journeyStage {
+    font-size: 0.65rem;
+  }
+
+  .journeyIcon {
+    border-width: 2px;
+    height: 2.15rem;
+    width: 2.15rem;
+  }
+
+  .journeyIcon svg {
+    height: 1rem;
+    width: 1rem;
+  }
+
+  .discoveryExplorer {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+
+  .discoveryOrbit {
+    height: 270px;
+    max-width: 300px;
+  }
+
+  .orbitLine {
+    height: 190px;
+    width: 190px;
+  }
+
+  .topicCore {
+    height: 108px;
+    width: 108px;
+  }
+
+  .thinkingBridge {
+    grid-template-columns: 1fr;
+  }
+
+  .thinkingArrow {
+    height: 36px;
+    transform: rotate(90deg);
+  }
+
+  .thinkingArrow span {
+    left: calc(50% - 32px);
+    right: calc(50% - 32px);
   }
 
   .actions {
@@ -388,5 +770,14 @@
 
   .actions :global(.button) {
     width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journeyIcon,
+  .orbitButton,
+  .thinkingPanelAfter,
+  .thinkingArrow {
+    transition: none;
   }
 }

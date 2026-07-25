@@ -11,6 +11,13 @@ const DEFAULT_TOPIC = 'something interesting';
 const AGE_BAND = '10-12';
 const LEARNING_DRAFT_PREFIX = 'chloelabs:learn-draft:v1:';
 const LAB_NOTEBOOK_KEY = 'chloelabs:lab-notebook:v1';
+const LEARNING_STAGES = [
+  {label: 'Start', icon: 'spark'},
+  {label: 'Question', icon: 'question'},
+  {label: 'Discover', icon: 'compass'},
+  {label: 'Check', icon: 'check'},
+  {label: 'Reflect', icon: 'reflect'},
+];
 
 export default function LearnPath() {
   const location = useLocation();
@@ -42,6 +49,17 @@ export default function LearnPath() {
     () => `${LEARNING_DRAFT_PREFIX}${topic.toLocaleLowerCase()}`,
     [topic],
   );
+  const currentStage = saved
+    ? 5
+    : discovery && checkedAnswer
+      ? 5
+      : discovery
+        ? 4
+        : discoveryStatus === 'loading'
+          ? 3
+          : activeQuestion
+            ? 2
+            : 1;
 
   useEffect(() => {
     setStorageMessage('');
@@ -223,6 +241,8 @@ export default function LearnPath() {
             </span>
           </aside>
 
+          <LearningJourney currentStage={currentStage} />
+
           <section className={styles.step}>
             <span className={styles.stepNumber}>1</span>
             <div>
@@ -369,20 +389,7 @@ export default function LearnPath() {
                 <div>
                   <Heading as="h2">Discover</Heading>
                   <p className={styles.activeQuestion}>{activeQuestion}</p>
-                  <div className={styles.discoveryGrid}>
-                    <DiscoveryCard
-                      label="Big idea"
-                      text={discovery.bigIdea}
-                    />
-                    <DiscoveryCard
-                      label="Surprising fact"
-                      text={discovery.surprisingFact}
-                    />
-                    <DiscoveryCard
-                      label="Look more closely"
-                      text={discovery.lookMoreClosely}
-                    />
-                  </div>
+                  <DiscoveryExplorer topic={topic} discovery={discovery} />
 
                   {discovery.uncertaintyNote && (
                     <p className={styles.uncertainty}>
@@ -475,17 +482,10 @@ export default function LearnPath() {
                     placeholder="I would explain it like this…"
                     rows={5}
                   />
-                  <div className={styles.startingIdeaReview}>
-                    <strong>Look back at your starting ideas</strong>
-                    {priorKnowledge.trim() ? (
-                      <blockquote>{priorKnowledge}</blockquote>
-                    ) : (
-                      <p>
-                        You did not write any starting ideas for this topic.
-                        That is okay—learning can begin with a question.
-                      </p>
-                    )}
-                  </div>
+                  <ThinkingBridge
+                    priorKnowledge={priorKnowledge}
+                    thinkingChange={thinkingChange}
+                  />
                   <label className={styles.label} htmlFor="thinking-change">
                     What would you keep, change, or add?
                   </label>
@@ -544,12 +544,207 @@ export default function LearnPath() {
   );
 }
 
-function DiscoveryCard({label, text}) {
+function LearningJourney({currentStage}) {
   return (
-    <article className={styles.discoveryCard}>
-      <span>{label}</span>
-      <p>{text}</p>
-    </article>
+    <nav className={styles.journey} aria-label="Your learning journey">
+      <div className={styles.journeyHeading}>
+        <strong>Your learning journey</strong>
+        <span>
+          Step {currentStage} of {LEARNING_STAGES.length}
+        </span>
+      </div>
+      <ol className={styles.journeyTrack}>
+        {LEARNING_STAGES.map((stage, index) => {
+          const number = index + 1;
+          const isComplete = number < currentStage;
+          const isCurrent = number === currentStage;
+          return (
+            <li
+              className={`${styles.journeyStage} ${
+                isComplete ? styles.journeyComplete : ''
+              } ${isCurrent ? styles.journeyCurrent : ''}`}
+              key={stage.label}
+              aria-current={isCurrent ? 'step' : undefined}>
+              <span className={styles.journeyIcon}>
+                {isComplete ? (
+                  <GraphicIcon name="check" />
+                ) : (
+                  <GraphicIcon name={stage.icon} />
+                )}
+              </span>
+              <span>{stage.label}</span>
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}
+
+function DiscoveryExplorer({topic, discovery}) {
+  const insights = [
+    {
+      id: 'big-idea',
+      label: 'Big idea',
+      shortLabel: 'Idea',
+      icon: 'bulb',
+      text: discovery.bigIdea,
+    },
+    {
+      id: 'surprising-fact',
+      label: 'Surprising fact',
+      shortLabel: 'Surprise',
+      icon: 'spark',
+      text: discovery.surprisingFact,
+    },
+    {
+      id: 'look-closer',
+      label: 'Look more closely',
+      shortLabel: 'Look closer',
+      icon: 'search',
+      text: discovery.lookMoreClosely,
+    },
+  ];
+  const [activeInsight, setActiveInsight] = useState(insights[0].id);
+  const selectedInsight =
+    insights.find((insight) => insight.id === activeInsight) || insights[0];
+
+  return (
+    <div className={styles.discoveryExplorer}>
+      <div>
+        <p className={styles.interactionHint}>
+          Choose a discovery point to reveal what ChloeLabs found.
+        </p>
+        <div className={styles.discoveryOrbit}>
+          <div className={styles.orbitLine} aria-hidden="true" />
+          <div className={styles.topicCore}>
+            <GraphicIcon name="compass" />
+            <strong>{topic}</strong>
+          </div>
+          {insights.map((insight, index) => (
+            <button
+              className={`${styles.orbitButton} ${
+                styles[`orbitButton${index + 1}`]
+              } ${
+                activeInsight === insight.id ? styles.orbitButtonActive : ''
+              }`}
+              type="button"
+              key={insight.id}
+              aria-pressed={activeInsight === insight.id}
+              aria-controls="active-discovery"
+              onClick={() => setActiveInsight(insight.id)}>
+              <GraphicIcon name={insight.icon} />
+              <span>{insight.shortLabel}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <article
+        className={styles.discoveryReveal}
+        id="active-discovery"
+        aria-live="polite">
+        <span className={styles.revealIcon}>
+          <GraphicIcon name={selectedInsight.icon} />
+        </span>
+        <div>
+          <span className={styles.revealLabel}>{selectedInsight.label}</span>
+          <p>{selectedInsight.text}</p>
+        </div>
+      </article>
+    </div>
+  );
+}
+
+function ThinkingBridge({priorKnowledge, thinkingChange}) {
+  const hasNewThinking = Boolean(thinkingChange.trim());
+
+  return (
+    <section className={styles.thinkingBridge} aria-label="How my thinking changed">
+      <div className={styles.thinkingPanel}>
+        <span className={styles.thinkingLabel}>Before exploring</span>
+        <p>
+          {priorKnowledge.trim() ||
+            'I began with a question instead of a starting idea.'}
+        </p>
+      </div>
+      <div
+        className={`${styles.thinkingArrow} ${
+          hasNewThinking ? styles.thinkingArrowActive : ''
+        }`}
+        aria-hidden="true">
+        <span />
+        <GraphicIcon name="arrow" />
+      </div>
+      <div
+        className={`${styles.thinkingPanel} ${styles.thinkingPanelAfter} ${
+          hasNewThinking ? styles.thinkingPanelFilled : ''
+        }`}>
+        <span className={styles.thinkingLabel}>After exploring</span>
+        <p>
+          {hasNewThinking
+            ? thinkingChange
+            : 'Write what you would keep, change, or add below.'}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function GraphicIcon({name}) {
+  const paths = {
+    spark: (
+      <>
+        <path d="M12 2l1.7 5.1L19 9l-5.3 1.9L12 16l-1.7-5.1L5 9l5.3-1.9L12 2z" />
+        <path d="M18.5 15l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2z" />
+      </>
+    ),
+    question: (
+      <>
+        <path d="M9.3 8.2a3 3 0 115.3 1.9c-.8.9-2.6 1.4-2.6 3.1" />
+        <path d="M12 17.7h.01" />
+      </>
+    ),
+    compass: (
+      <>
+        <circle cx="12" cy="12" r="8.5" />
+        <path d="M15.8 8.2l-2.1 5.5-5.5 2.1 2.1-5.5 5.5-2.1z" />
+      </>
+    ),
+    check: <path d="M5 12.5l4.2 4.2L19 7" />,
+    reflect: (
+      <>
+        <path d="M5 7h10a4 4 0 014 4v1" />
+        <path d="M8 4L5 7l3 3M19 17H9a4 4 0 01-4-4v-1" />
+        <path d="M16 14l3 3-3 3" />
+      </>
+    ),
+    bulb: (
+      <>
+        <path d="M8.5 14.5a6 6 0 117 0c-1 .8-1.5 1.8-1.5 3h-4c0-1.2-.5-2.2-1.5-3z" />
+        <path d="M10 21h4M10 18h4" />
+      </>
+    ),
+    search: (
+      <>
+        <circle cx="10.5" cy="10.5" r="6" />
+        <path d="M15 15l5 5" />
+      </>
+    ),
+    arrow: <path d="M4 12h15M14 7l5 5-5 5" />,
+  };
+
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round">
+      {paths[name]}
+    </svg>
   );
 }
 
