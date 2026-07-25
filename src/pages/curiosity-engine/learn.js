@@ -9,6 +9,8 @@ const LEARN_API_URL =
   'https://chloelabs-learn-api.chloelabs-amanda.workers.dev';
 const DEFAULT_TOPIC = 'something interesting';
 const AGE_BAND = '10-12';
+const LEARNING_DRAFT_PREFIX = 'chloelabs:learn-draft:v1:';
+const LAB_NOTEBOOK_KEY = 'chloelabs:lab-notebook:v1';
 
 export default function LearnPath() {
   const location = useLocation();
@@ -18,6 +20,9 @@ export default function LearnPath() {
   }, [location.search]);
 
   const [priorKnowledge, setPriorKnowledge] = useState('');
+  const [thinkingChange, setThinkingChange] = useState('');
+  const [loadedDraftKey, setLoadedDraftKey] = useState('');
+  const [storageMessage, setStorageMessage] = useState('');
   const [questions, setQuestions] = useState([]);
   const [questionsStatus, setQuestionsStatus] = useState('loading');
   const [questionsError, setQuestionsError] = useState('');
@@ -33,6 +38,51 @@ export default function LearnPath() {
 
   const activeQuestion =
     selectedQuestion === 'custom' ? customQuestion.trim() : selectedQuestion;
+  const draftKey = useMemo(
+    () => `${LEARNING_DRAFT_PREFIX}${topic.toLocaleLowerCase()}`,
+    [topic],
+  );
+
+  useEffect(() => {
+    setStorageMessage('');
+
+    try {
+      const storedDraft = window.localStorage.getItem(draftKey);
+      const draft = storedDraft ? JSON.parse(storedDraft) : {};
+      setPriorKnowledge(
+        typeof draft.priorKnowledge === 'string' ? draft.priorKnowledge : '',
+      );
+      setThinkingChange(
+        typeof draft.thinkingChange === 'string' ? draft.thinkingChange : '',
+      );
+    } catch {
+      setPriorKnowledge('');
+      setThinkingChange('');
+      setStorageMessage(
+        'This browser could not restore your saved starting ideas.',
+      );
+    } finally {
+      setLoadedDraftKey(draftKey);
+    }
+  }, [draftKey]);
+
+  useEffect(() => {
+    if (loadedDraftKey !== draftKey) return;
+
+    try {
+      const draft = {priorKnowledge, thinkingChange};
+      if (priorKnowledge.trim() || thinkingChange.trim()) {
+        window.localStorage.setItem(draftKey, JSON.stringify(draft));
+      } else {
+        window.localStorage.removeItem(draftKey);
+      }
+      setStorageMessage('');
+    } catch {
+      setStorageMessage(
+        'This browser could not save your starting ideas. Keep this page open so you do not lose them.',
+      );
+    }
+  }, [draftKey, loadedDraftKey, priorKnowledge, thinkingChange]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -101,8 +151,45 @@ export default function LearnPath() {
   }
 
   function saveReflection() {
-    if (!explanation.trim()) return;
-    setSaved(true);
+    if (!explanation.trim() || !thinkingChange.trim()) return;
+
+    try {
+      const storedNotebook = window.localStorage.getItem(LAB_NOTEBOOK_KEY);
+      const notebook = storedNotebook ? JSON.parse(storedNotebook) : [];
+      const entries = Array.isArray(notebook) ? notebook : [];
+      const entry = {
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        topic,
+        question: activeQuestion,
+        startingIdeas: priorKnowledge.trim(),
+        explanation: explanation.trim(),
+        thinkingChange: thinkingChange.trim(),
+        savedAt: new Date().toISOString(),
+      };
+      window.localStorage.setItem(
+        LAB_NOTEBOOK_KEY,
+        JSON.stringify([...entries, entry]),
+      );
+      setSaved(true);
+      setStorageMessage('');
+    } catch {
+      setSaved(false);
+      setStorageMessage(
+        'This browser could not save your reflection. Keep this page open so you do not lose it.',
+      );
+    }
+  }
+
+  function clearStartingIdeas() {
+    setPriorKnowledge('');
+    setThinkingChange('');
+    setSaved(false);
+    try {
+      window.localStorage.removeItem(draftKey);
+      setStorageMessage('');
+    } catch {
+      setStorageMessage('This browser could not clear the saved draft.');
+    }
   }
 
   return (
@@ -155,9 +242,25 @@ export default function LearnPath() {
                 placeholder={`I already know that ${topic}…`}
                 rows={4}
               />
-              <p className={styles.privacyNote}>
-                This writing stays in your browser and is not sent to the AI.
-              </p>
+              <div className={styles.draftControls}>
+                <p className={styles.privacyNote}>
+                  Saved only in this browser so you can return to it later. It
+                  is not sent to the AI.
+                </p>
+                {priorKnowledge && (
+                  <button
+                    className={styles.clearButton}
+                    type="button"
+                    onClick={clearStartingIdeas}>
+                    Clear my starting ideas
+                  </button>
+                )}
+              </div>
+              {storageMessage && (
+                <p className={styles.storageWarning} role="status">
+                  {storageMessage}
+                </p>
+              )}
             </div>
           </section>
 
@@ -356,7 +459,7 @@ export default function LearnPath() {
               <section className={styles.step}>
                 <span className={styles.stepNumber}>5</span>
                 <div>
-                  <Heading as="h2">Explain it in your own words</Heading>
+                  <Heading as="h2">Reflect on what you learned</Heading>
                   <p>Imagine Comet asked you about this. What would you say?</p>
                   <label className={styles.label} htmlFor="explanation">
                     My explanation
@@ -372,6 +475,35 @@ export default function LearnPath() {
                     placeholder="I would explain it like this…"
                     rows={5}
                   />
+                  <div className={styles.startingIdeaReview}>
+                    <strong>Look back at your starting ideas</strong>
+                    {priorKnowledge.trim() ? (
+                      <blockquote>{priorKnowledge}</blockquote>
+                    ) : (
+                      <p>
+                        You did not write any starting ideas for this topic.
+                        That is okay—learning can begin with a question.
+                      </p>
+                    )}
+                  </div>
+                  <label className={styles.label} htmlFor="thinking-change">
+                    What would you keep, change, or add?
+                  </label>
+                  <textarea
+                    id="thinking-change"
+                    className={styles.textarea}
+                    value={thinkingChange}
+                    onChange={(event) => {
+                      setThinkingChange(event.target.value);
+                      setSaved(false);
+                    }}
+                    placeholder="At first I thought… Now I would…"
+                    rows={4}
+                  />
+                  <p className={styles.privacyNote}>
+                    Your reflection is also saved only in this browser and is
+                    not sent to the AI.
+                  </p>
                   <p className={styles.nextQuestion}>
                     <strong>A possible next question:</strong>{' '}
                     {discovery.nextQuestion}
@@ -380,7 +512,9 @@ export default function LearnPath() {
                     <button
                       className="button button--primary button--lg"
                       type="button"
-                      disabled={!explanation.trim()}
+                      disabled={
+                        !explanation.trim() || !thinkingChange.trim()
+                      }
                       onClick={saveReflection}>
                       Save to my Lab Notebook
                     </button>
@@ -394,8 +528,9 @@ export default function LearnPath() {
                     <div className={styles.savedMessage} role="status">
                       <strong>Reflection ready!</strong>
                       <span>
-                        This prototype keeps it on this page. Persistent Lab
-                        Notebook saving is the next product step.
+                        Your starting ideas and final reflection are saved in
+                        this browser’s Lab Notebook. They are not synced to
+                        other devices.
                       </span>
                     </div>
                   )}

@@ -192,8 +192,59 @@
 
 .privacyNote {
   font-size: 0.84rem;
-  margin: 0.5rem 0 0;
+  margin: 0;
   opacity: 0.68;
+}
+
+.draftControls {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+}
+
+.clearButton {
+  background: transparent;
+  border: 0;
+  color: var(--ifm-color-primary-darkest);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.clearButton:hover,
+.clearButton:focus-visible {
+  color: var(--ifm-color-primary);
+}
+
+.storageWarning {
+  color: #8a3b12;
+  font-size: 0.88rem;
+  margin: 0.65rem 0 0;
+}
+
+.startingIdeaReview {
+  background: #fff7e9;
+  border-left: 4px solid #f28c28;
+  border-radius: 0.65rem;
+  margin: 1.25rem 0;
+  padding: 1rem 1.1rem;
+}
+
+.startingIdeaReview blockquote {
+  border: 0;
+  font-size: 1rem;
+  margin: 0.65rem 0 0;
+  padding: 0;
+}
+
+.startingIdeaReview p {
+  margin: 0.5rem 0 0;
 }
 
 .sources {
