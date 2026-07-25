@@ -12,34 +12,55 @@ import styles from './curiosity-engine.module.css';
 const paths = [
   {
     key: 'learn',
-    icon: '📖',
-    title: 'Learn',
-    prompt: (topic) => `Discover three surprising facts about ${topic} and explain one in your own words.`,
+    icon: '✦',
+    title: 'Find a surprise',
+    verb: 'LEARN',
+    prompt: (topic) => `Uncover something unexpected about ${topic}.`,
   },
   {
     key: 'build',
-    icon: '🛠️',
-    title: 'Build',
-    prompt: (topic) => `Make a model, game, diagram, or small tool that helps someone understand ${topic}.`,
+    icon: '◆',
+    title: 'Make it work',
+    verb: 'BUILD',
+    prompt: (topic) => `Turn ${topic} into a model, game, tool, or demonstration.`,
   },
   {
     key: 'investigate',
-    icon: '🔎',
-    title: 'Investigate',
-    prompt: (topic) => `Choose one question about ${topic}, collect evidence, and record what you notice.`,
+    icon: '⌕',
+    title: 'Test a hunch',
+    verb: 'INVESTIGATE',
+    prompt: (topic) => `Predict, observe, and collect clues about ${topic}.`,
   },
   {
     key: 'create',
-    icon: '🎨',
-    title: 'Create',
-    prompt: (topic) => `Turn what fascinates you about ${topic} into a story, illustration, video, or exhibit.`,
+    icon: '★',
+    title: 'Remix the idea',
+    verb: 'CREATE',
+    prompt: (topic) => `Invent a story, image, comic, video, or exhibit about ${topic}.`,
   },
   {
     key: 'share',
-    icon: '💬',
-    title: 'Share',
-    prompt: (topic) => `Teach someone one idea about ${topic} using an explanation they can understand.`,
+    icon: '◉',
+    title: 'Show someone',
+    verb: 'SHARE',
+    prompt: (topic) => `Turn what you discovered into an experience for someone else.`,
   },
+];
+
+const QUICK_IDEAS = [
+  ['🐙', 'Octopuses'],
+  ['🌪️', 'Storms'],
+  ['🐕', 'Dogs'],
+  ['🧊', 'Ice'],
+  ['🎮', 'Video games'],
+  ['🌱', 'Plants'],
+];
+const SURPRISE_IDEAS = [
+  'Why popcorn pops',
+  'How geckos climb walls',
+  'Why the sky changes color',
+  'How a robot knows where it is',
+  'What makes a paper airplane fly',
 ];
 
 export default function CuriosityEngine() {
@@ -57,7 +78,7 @@ export default function CuriosityEngine() {
   const [curiosity, setCuriosity] = useState(initialTopic);
   const [topic, setTopic] = useState(initialTopic);
   const [project, setProject] = useState(null);
-  const [selectedPath, setSelectedPath] = useState(null);
+  const [surpriseIndex, setSurpriseIndex] = useState(0);
   const [revealRequest, setRevealRequest] = useState(0);
   const resultsHeadingRef = useRef(null);
 
@@ -85,12 +106,22 @@ export default function CuriosityEngine() {
 
   function explore(event) {
     event.preventDefault();
-    const nextTopic = curiosity.trim();
+    startTopic(curiosity);
+  }
+
+  function startTopic(value) {
+    const nextTopic = value.trim();
     if (!nextTopic) return;
+    setCuriosity(nextTopic);
     setTopic(nextTopic);
     setProject(ensureProjectForTopic(nextTopic));
-    setSelectedPath(null);
     setRevealRequest((request) => request + 1);
+  }
+
+  function surpriseMe() {
+    const idea = SURPRISE_IDEAS[surpriseIndex % SURPRISE_IDEAS.length];
+    setSurpriseIndex((index) => index + 1);
+    startTopic(idea);
   }
 
   function choosePath(path) {
@@ -121,7 +152,6 @@ export default function CuriosityEngine() {
       return;
     }
 
-    setSelectedPath(path.key);
   }
 
   return (
@@ -130,17 +160,16 @@ export default function CuriosityEngine() {
       description="Turn a question or interest into five possible learning paths with ChloeLabs.">
       <main className={styles.page}>
         <section className={styles.hero}>
-          <div className="container">
-            <span className={styles.eyebrow}>ChloeLabs prototype</span>
+          <div className={`container ${styles.heroInner}`}>
+            <span className={styles.eyebrow}>The Curiosity Engine™</span>
             <Heading as="h1">The Curiosity Engine™</Heading>
             <p className={styles.intro}>
-              Start with something that makes you wonder. ChloeLabs will help
-              you find a way to learn, build, investigate, create, or share.
+              What cool thing can you build today?
             </p>
 
             <form className={styles.form} onSubmit={explore}>
               <label htmlFor="curiosity" className={styles.label}>
-                What are you curious about today?
+                Type anything that makes you curious.
               </label>
               <div className={styles.inputRow}>
                 <input
@@ -149,14 +178,34 @@ export default function CuriosityEngine() {
                   type="text"
                   value={curiosity}
                   onChange={(event) => setCuriosity(event.target.value)}
-                  placeholder="Try dogs, volcanoes, space, or anything else…"
+                  placeholder="Dogs, space, slime, weather, games…"
                   maxLength={100}
                 />
-                <button className="button button--secondary button--lg" type="submit">
-                  Start exploring
+                <button className={styles.launchButton} type="submit">
+                  Show me what I can make →
+                </button>
+              </div>
+              <div className={styles.quickIdeas}>
+                {QUICK_IDEAS.map(([icon, idea]) => (
+                  <button
+                    key={idea}
+                    onClick={() => startTopic(idea)}
+                    type="button">
+                    <span aria-hidden="true">{icon}</span>
+                    {idea}
+                  </button>
+                ))}
+                <button
+                  className={styles.surprise}
+                  onClick={surpriseMe}
+                  type="button">
+                  ✦ Surprise me
                 </button>
               </div>
             </form>
+            <div className={styles.heroPromise}>
+              <span>Pick</span><b>→</b><span>Try</span><b>→</b><span>Change</span><b>→</b><span>Make it yours</span>
+            </div>
           </div>
         </section>
 
@@ -168,55 +217,62 @@ export default function CuriosityEngine() {
                 className={styles.resultsHeading}
                 ref={resultsHeadingRef}
                 tabIndex={-1}>
-                Five ways to explore “{topic}”
+                What could you do with “{topic}”?
               </Heading>
-              <p>Choose the path that sounds most exciting right now.</p>
-
-              {project && (
-                <div className={styles.projectRibbon}>
-                  <div>
-                    <span>New project workspace</span>
-                    <strong>{project.title}</strong>
-                    <small>
-                      Your five paths now stay connected around this curiosity.
-                    </small>
-                  </div>
-                  <button
-                    className="button button--primary"
-                    onClick={() => history.push(projectLink(project))}
-                    type="button">
-                    Open project workspace
-                  </button>
-                </div>
-              )}
+              <p>Tap the one that makes you want to start.</p>
 
               <div className={styles.pathGrid}>
                 {paths.map((path) => (
                   <button
                     key={path.key}
                     type="button"
-                    className={`${styles.pathCard} ${selectedPath === path.key ? styles.selected : ''}`}
+                    className={`${styles.pathCard} ${styles[path.key]}`}
                     onClick={() => choosePath(path)}
-                    aria-pressed={selectedPath === path.key}>
+                    aria-label={`${path.verb}: ${path.title}. ${path.prompt(topic)}`}>
+                    <small>{path.verb}</small>
                     <span className={styles.pathIcon} aria-hidden="true">{path.icon}</span>
                     <span className={styles.pathTitle}>{path.title}</span>
                     <span className={styles.pathPrompt}>{path.prompt(topic)}</span>
+                    <strong className={styles.tryIt}>Try it →</strong>
                   </button>
                 ))}
               </div>
 
-              {selectedPath && (
-                <div className={styles.nextStep}>
-                  <Heading as="h3">You found a direction</Heading>
-                  <p>
-                    Next, ChloeLabs will turn this idea into a project plan with
-                    a goal, milestones, a lab notebook, and reflection prompts.
-                  </p>
-                  <p className={styles.prototypeNote}>
-                    This is an early prototype. Project-plan generation is the next feature being tested.
-                  </p>
+              {project && (
+                <div className={styles.projectPocket}>
+                  <div className={styles.pocketGraphic} aria-hidden="true">
+                    <span>?</span>
+                    <i />
+                    <i />
+                    <i />
+                  </div>
+                  <div>
+                    <span>Your idea has a home</span>
+                    <Heading as="h3">{project.title}</Heading>
+                    <p>
+                      Keep your attempts, evidence, creations, and next question
+                      together.
+                    </p>
+                  </div>
+                  <button
+                    className="button button--secondary"
+                    onClick={() => history.push(projectLink(project))}
+                    type="button">
+                    Open my project
+                  </button>
                 </div>
               )}
+
+              <section className={styles.levels}>
+                <span>Every challenge can grow</span>
+                <Heading as="h2">Start simple. Take it as far as you want.</Heading>
+                <div>
+                  <article><b>1</b><strong>Start</strong><small>Make the first version.</small></article>
+                  <article><b>2</b><strong>Improve</strong><small>Change one thing.</small></article>
+                  <article><b>3</b><strong>Remix</strong><small>Break a rule on purpose.</small></article>
+                  <article><b>★</b><strong>Boss Level</strong><small>Invent your own version.</small></article>
+                </div>
+              </section>
             </div>
           </section>
         )}
@@ -224,10 +280,13 @@ export default function CuriosityEngine() {
         {!topic && (
           <section className={styles.howItWorks}>
             <div className="container">
-              <Heading as="h2">One curiosity. Many possibilities.</Heading>
+              <div className={styles.emptyPlay}>
+                <span aria-hidden="true">?</span>
+              </div>
+              <Heading as="h2">One curiosity. Many things to try.</Heading>
               <p>
-                The engine does not answer the question for you. It helps you
-                choose something meaningful to do with it.
+                No grades. No streaks. No single right answer. Just a place to
+                experiment and make your next version better.
               </p>
             </div>
           </section>
