@@ -19,6 +19,15 @@ const STATUS_OPTIONS = [
   ['ready-to-share', 'Ready to share', 'I am preparing the story of my work.'],
 ];
 
+const COMPLETION_STEPS = [
+  {id: 'question', icon: '?', title: 'My question is clear', description: 'I can explain what I wanted to find out or make.', automatic: true},
+  {id: 'action', icon: '⚡', title: 'I did something real', description: 'I observed, tested, built, made, interviewed, or analyzed.'},
+  {id: 'record', icon: '✎', title: 'I recorded what happened', description: 'My notes describe what I actually did—not what I planned.'},
+  {id: 'evidence', icon: '◆', title: 'I have evidence or an artifact', description: 'I can point to data, a photo, code, a model, or something I made.'},
+  {id: 'reflection', icon: '↻', title: 'I reflected in my own words', description: 'I wrote what changed, surprised me, failed, or worked.'},
+  {id: 'nextQuestion', icon: '→', title: 'I found my next question', description: 'This project gave me something new to wonder about.', automatic: true},
+];
+
 export default function ProjectWorkspace() {
   const location = useLocation();
   const requestedId = useMemo(
@@ -68,24 +77,87 @@ export default function ProjectWorkspace() {
     () => new Set(projectEntries.map((entry) => entry.notebookPath)),
     [projectEntries],
   );
+  const completionState = useMemo(
+    () => ({
+      question: Boolean(project?.question?.trim()),
+      action: Boolean(project?.completion?.action),
+      record: Boolean(project?.completion?.record),
+      evidence: Boolean(project?.completion?.evidence),
+      reflection: Boolean(project?.completion?.reflection),
+      nextQuestion: Boolean(project?.nextQuestion?.trim()),
+    }),
+    [project],
+  );
+  const completionCount = Object.values(completionState).filter(Boolean).length;
+  const readyToFinish = completionCount === COMPLETION_STEPS.length;
 
   function change(field, value) {
-    setProject((current) => ({...current, [field]: value}));
+    setProject((current) => ({
+      ...current,
+      [field]: value,
+      ...((field === 'question' || field === 'nextQuestion') &&
+      !value.trim() &&
+      current.finishedAt
+        ? {finishedAt: null, status: 'reflecting'}
+        : {}),
+      ...(field === 'status' && current.finishedAt
+        ? {finishedAt: null}
+        : {}),
+    }));
     setMessage('');
   }
 
-  function saveProject() {
-    if (!project) return;
-    const saved = updateProject(project.id, {
+  function projectChanges(overrides = {}) {
+    return {
       title: project.title.trim() || `My ${project.topic} project`,
       question: project.question.trim(),
       why: project.why.trim(),
       goal: project.goal.trim(),
       nextAction: project.nextAction.trim(),
+      nextQuestion: project.nextQuestion?.trim() || '',
+      completion: project.completion || {},
+      finishedAt: project.finishedAt || null,
       status: project.status,
-    });
+      ...overrides,
+    };
+  }
+
+  function saveProject() {
+    if (!project) return;
+    const saved = updateProject(project.id, projectChanges());
     setProject(saved);
     setMessage('Project workspace saved privately in this browser.');
+  }
+
+  function toggleCompletion(id) {
+    const nextCompletion = {
+      ...(project.completion || {}),
+      [id]: !project.completion?.[id],
+    };
+    const saved = updateProject(
+      project.id,
+      projectChanges({
+        completion: nextCompletion,
+        ...(project.finishedAt
+          ? {finishedAt: null, status: 'reflecting'}
+          : {}),
+      }),
+    );
+    setProject(saved);
+    setMessage('Finish-line progress saved in this browser.');
+  }
+
+  function finishProject() {
+    if (!readyToFinish) return;
+    const saved = updateProject(
+      project.id,
+      projectChanges({
+        finishedAt: new Date().toISOString(),
+        status: 'completed',
+      }),
+    );
+    setProject(saved);
+    setMessage('Project finished! Your work is still private to this browser.');
   }
 
   if (!project) {
@@ -308,6 +380,114 @@ export default function ProjectWorkspace() {
                 <p>
                   Your project record will grow when you save work from a path.
                 </p>
+              </div>
+            )}
+          </section>
+
+          <section className={styles.finishLine}>
+            <div className={styles.finishHeading}>
+              <div>
+                <span className={styles.sectionLabel}>Comet’s finish trail</span>
+                <Heading as="h2">
+                  {project.finishedAt
+                    ? 'You finished this project!'
+                    : 'What does “finished” mean?'}
+                </Heading>
+                <p>
+                  A finished project is not five clicked paths. It is real work
+                  you can explain and support.
+                </p>
+              </div>
+              <div
+                className={styles.finishMeter}
+                aria-label={`${completionCount} of ${COMPLETION_STEPS.length} finish steps complete`}>
+                <strong>
+                  {completionCount}/{COMPLETION_STEPS.length}
+                </strong>
+                <span>ready</span>
+              </div>
+            </div>
+
+            <div className={styles.trail} aria-label="Project finish checklist">
+              {COMPLETION_STEPS.map((step, index) => {
+                const complete = completionState[step.id];
+                return (
+                  <button
+                    aria-pressed={complete}
+                    className={complete ? styles.trailComplete : ''}
+                    disabled={step.automatic}
+                    key={step.id}
+                    onClick={() => toggleCompletion(step.id)}
+                    type="button">
+                    <span className={styles.stepNumber}>{index + 1}</span>
+                    <span className={styles.stepIcon} aria-hidden="true">
+                      {complete ? '✓' : step.icon}
+                    </span>
+                    <strong>{step.title}</strong>
+                    <small>{step.description}</small>
+                    {step.automatic && (
+                      <em>
+                        {step.id === 'question'
+                          ? 'Complete when your main question is saved.'
+                          : 'Complete when your next question is saved.'}
+                      </em>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className={styles.nextQuestionCard}>
+              <span aria-hidden="true">?</span>
+              <label>
+                <strong>What do you wonder now?</strong>
+                <small>
+                  Good projects rarely end curiosity. They make the next
+                  question sharper.
+                </small>
+                <textarea
+                  maxLength={300}
+                  onChange={(event) =>
+                    change('nextQuestion', event.target.value)
+                  }
+                  placeholder={`After this project about ${project.topic}, I now wonder…`}
+                  rows={3}
+                  value={project.nextQuestion || ''}
+                />
+              </label>
+            </div>
+
+            {project.finishedAt ? (
+              <div className={styles.finishedBanner} role="status">
+                <span aria-hidden="true">★</span>
+                <div>
+                  <strong>Finished {formatDate(project.finishedAt)}</strong>
+                  <p>
+                    You did the work, kept a record, and decided what comes
+                    next. That is a project—not just an AI response.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.finishAction}>
+                <div>
+                  <strong>
+                    {readyToFinish
+                      ? 'Your project is ready for the finish flag.'
+                      : `${COMPLETION_STEPS.length - completionCount} finish ${COMPLETION_STEPS.length - completionCount === 1 ? 'step' : 'steps'} left.`}
+                  </strong>
+                  <small>
+                    Only you can decide whether the evidence and reflection are
+                    honest and complete.
+                  </small>
+                </div>
+                <button
+                  className="button button--primary button--lg"
+                  disabled={!readyToFinish}
+                  onClick={finishProject}
+                  type="button">
+                  Mark my project finished
+                </button>
               </div>
             )}
           </section>
