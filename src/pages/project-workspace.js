@@ -29,6 +29,16 @@ const COMPLETION_STEPS = [
   {id: 'nextQuestion', icon: '→', title: 'I found my next question', description: 'This project gave me something new to wonder about.', automatic: true},
 ];
 
+const PROJECT_STORY_STEPS = [
+  ['question', 'Started with a question'],
+  ['goal', 'Chose a goal'],
+  ['tried', 'Tried something'],
+  ['evidence', 'Saved evidence'],
+  ['reflected', 'Reflected'],
+  ['nextQuestion', 'Found a next question'],
+  ['finished', 'Finished the project'],
+];
+
 export default function ProjectWorkspace() {
   const location = useLocation();
   const requestedId = useMemo(
@@ -254,6 +264,36 @@ export default function ProjectWorkspace() {
               completedPaths={completedPaths}
               topic={project.topic}
             />
+          </section>
+
+          <section className={styles.storySoFar}>
+            <div>
+              <span className={styles.sectionLabel}>Longitudinal record</span>
+              <Heading as="h2">Project story so far</Heading>
+              <p>Only the steps supported by your saved work are marked complete.</p>
+            </div>
+            <ol>
+              {PROJECT_STORY_STEPS.map(([id, label], index) => {
+                const complete = storyStepComplete(
+                  id,
+                  project,
+                  projectEntries,
+                );
+                return (
+                  <li className={complete ? styles.storyComplete : ''} key={id}>
+                    <span>{complete ? '✓' : index + 1}</span>
+                    <div>
+                      <strong>{label}</strong>
+                      <small>
+                        {complete
+                          ? storyStepDetail(id, project, projectEntries)
+                          : 'Optional next step'}
+                      </small>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
           </section>
 
           <div className={styles.workspaceGrid}>
@@ -530,6 +570,32 @@ export default function ProjectWorkspace() {
       </main>
     </Layout>
   );
+}
+
+function storyStepComplete(id, project, entries) {
+  return {
+    question: Boolean(project.question?.trim()),
+    goal: Boolean(project.goal?.trim()),
+    tried: entries.length > 0 || Boolean(project.completion?.action),
+    evidence: Boolean(project.evidence?.length),
+    reflected: Boolean(project.completion?.reflection),
+    nextQuestion: Boolean(project.nextQuestion?.trim()),
+    finished: Boolean(project.finishedAt),
+  }[id];
+}
+
+function storyStepDetail(id, project, entries) {
+  return {
+    question: project.question,
+    goal: project.goal,
+    tried: entries.length
+      ? `${entries.length} saved notebook ${entries.length === 1 ? 'entry' : 'entries'}`
+      : 'Action recorded',
+    evidence: `${project.evidence.length} evidence ${project.evidence.length === 1 ? 'item' : 'items'}`,
+    reflected: 'Reflection saved',
+    nextQuestion: project.nextQuestion,
+    finished: `Finished ${formatDate(project.finishedAt)}`,
+  }[id];
 }
 
 function ProjectOrbit({completedPaths}) {

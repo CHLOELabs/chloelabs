@@ -162,13 +162,13 @@ export default function CuriosityEngine() {
 
   return (
     <Layout
-      title="The Curiosity Engine™"
+      title="The Curiosity Engine"
       description="Turn a question or interest into five possible learning paths with ChloeLabs.">
       <main className={styles.page}>
         <section className={styles.hero}>
           <div className={`container ${styles.heroInner}`}>
-            <span className={styles.eyebrow}>The Curiosity Engine™</span>
-            <Heading as="h1">The Curiosity Engine™</Heading>
+            <span className={styles.eyebrow}>The Curiosity Engine</span>
+            <Heading as="h1">The Curiosity Engine</Heading>
             <p className={styles.intro}>
               What cool thing can you build today?
             </p>

@@ -74,15 +74,10 @@ const config = {
         },
         items: [
           {
-            to: '/missions',
-            label: 'Missions',
-            position: 'left',
-          },
-          {
             type: 'docSidebar',
             sidebarId: 'tutorialSidebar',
             position: 'left',
-            label: 'Bytelets',
+            label: 'Explore',
           },
           {
             to: '/my-projects',
@@ -94,18 +89,17 @@ const config = {
             label: 'My Lab Notebook',
             position: 'left',
           },
-          {to: '/for-parents', label: 'For Parents', position: 'left'},
-          {to: '/blog', label: 'Insights', position: 'left'},
+          {to: '/for-parents', label: 'For Grown-Ups', position: 'left'},
         ],
       },
       footer: {
         style: 'light',
         links: [
           {
-            title: 'Learn',
+            title: 'Explore',
             items: [
               {
-                label: 'Bytelets',
+                label: 'Explore',
                 to: '/docs/intro',
               },
               {
@@ -117,7 +111,7 @@ const config = {
                 to: '/my-lab-notebook',
               },
               {
-                label: 'For Parents',
+                label: 'For Grown-Ups',
                 to: '/for-parents',
               },
             ],

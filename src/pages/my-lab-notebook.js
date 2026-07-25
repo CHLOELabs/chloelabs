@@ -115,16 +115,16 @@ export default function MyLabNotebook() {
   return (
     <Layout
       title="My Lab Notebook"
-      description="Your private collection of ChloeLabs discoveries and projects.">
+      description="Every saved note, experiment, build, discovery, creation, and sharing plan lives here.">
       <main className={styles.page}>
         <header className={styles.hero}>
           <div className={`container ${styles.heroInner}`}>
             <div>
               <span className={styles.eyebrow}>Your curiosity collection</span>
-              <Heading as="h1">My Lab Notebook</Heading>
+              <Heading as="h1">The detailed record of your work</Heading>
               <p>
-                Every saved discovery, build, investigation, creation, and
-                sharing plan—together in one place.
+                Every saved note, experiment, build, discovery, creation, and
+                sharing plan lives here.
               </p>
             </div>
             <NotebookComet />
@@ -140,6 +140,10 @@ export default function MyLabNotebook() {
                 Your notebook is stored on this device, not in a ChloeLabs
                 account. Download a backup before clearing browser data or
                 changing devices.
+              </p>
+              <p>
+                <strong>My Lab Notebook keeps the process.</strong>{' '}
+                <Link to="/my-projects">My Projects shows the story.</Link>
               </p>
             </div>
           </aside>

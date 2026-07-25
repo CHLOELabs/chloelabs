@@ -2,8 +2,7 @@ import {useEffect, useState} from 'react';
 import Link from '@docusaurus/Link';
 import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
-import {getMission} from '../data/missions';
-import {readMissionAttempts} from '../lib/missionStorage';
+import {readNotebook} from '../lib/notebookStorage';
 import {readProjects, projectLink} from '../lib/projectStorage';
 import styles from './my-projects.module.css';
 
@@ -17,37 +16,37 @@ const STATUS = {
 
 export default function MyProjects() {
   const [projects, setProjects] = useState([]);
-  const [missionAttempts, setMissionAttempts] = useState([]);
+  const [notebookEntries, setNotebookEntries] = useState([]);
 
   useEffect(() => {
     const refresh = () => {
       setProjects(readProjects());
-      setMissionAttempts(readMissionAttempts());
+      setNotebookEntries(readNotebook());
     };
     refresh();
     window.addEventListener('storage', refresh);
     window.addEventListener('chloelabs:projects-changed', refresh);
-    window.addEventListener('chloelabs:mission-attempts-changed', refresh);
+    window.addEventListener('chloelabs:notebook-changed', refresh);
     return () => {
       window.removeEventListener('storage', refresh);
       window.removeEventListener('chloelabs:projects-changed', refresh);
-      window.removeEventListener('chloelabs:mission-attempts-changed', refresh);
+      window.removeEventListener('chloelabs:notebook-changed', refresh);
     };
   }, []);
 
   return (
     <Layout
       title="My Projects"
-      description="A private visual gallery of ChloeLabs projects, evidence, and next versions.">
+      description="See how each question grew through attempts, evidence, changes, and new ideas.">
       <main className={styles.page}>
         <header className={styles.hero}>
           <div className={`container ${styles.heroInner}`}>
             <div>
               <span>Made by me</span>
-              <Heading as="h1">My Project Gallery</Heading>
+              <Heading as="h1">The story of each project</Heading>
               <p>
-                Questions I followed. Things I tried. Evidence I kept. Ideas I
-                want to make better.
+                See how each question grew through attempts, evidence,
+                changes, and new ideas.
               </p>
             </div>
             <div className={styles.galleryScene} aria-hidden="true">
@@ -81,7 +80,12 @@ export default function MyProjects() {
               </div>
               <div className={styles.grid}>
                 {projects.map((project, index) => (
-                  <ProjectCard index={index} key={project.id} project={project} />
+                  <ProjectCard
+                    entries={entriesForProject(project, notebookEntries)}
+                    index={index}
+                    key={project.id}
+                    project={project}
+                  />
                 ))}
               </div>
             </>
@@ -99,50 +103,10 @@ export default function MyProjects() {
             </section>
           )}
 
-          {missionAttempts.length > 0 && (
-            <section className={styles.missionAttempts}>
-              <div className={styles.missionAttemptsHeading}>
-                <div>
-                  <span>Technology missions</span>
-                  <Heading as="h2">My mission attempts</Heading>
-                </div>
-                <Link to="/missions">Try another mission →</Link>
-              </div>
-              <div className={styles.attemptGrid}>
-                {missionAttempts
-                  .slice()
-                  .reverse()
-                  .map((attempt) => {
-                    const mission = getMission(attempt.missionId);
-                    if (!mission) return null;
-                    return (
-                      <article key={attempt.id}>
-                        <span>Attempt {attempt.attemptNumber}</span>
-                        <Heading as="h3">{mission.title}</Heading>
-                        <p>
-                          {attempt.caption ||
-                            attempt.result ||
-                            mission.outcome}
-                        </p>
-                        <small>
-                          Saved {new Date(attempt.date).toLocaleDateString()}
-                        </small>
-                        <Link
-                          className="button button--secondary button--sm"
-                          to={`/missions/mission?id=${mission.id}`}>
-                          Try this mission again
-                        </Link>
-                      </article>
-                    );
-                  })}
-              </div>
-            </section>
-          )}
-
           <div className={styles.notebookLink}>
             <div>
-              <strong>Looking for every note and saved path?</strong>
-              <small>The Lab Notebook keeps the detailed record.</small>
+              <strong>My Lab Notebook keeps the process.</strong>
+              <small>My Projects shows the story.</small>
             </div>
             <Link to="/my-lab-notebook">Open My Lab Notebook →</Link>
           </div>
@@ -152,8 +116,9 @@ export default function MyProjects() {
   );
 }
 
-function ProjectCard({index, project}) {
+function ProjectCard({entries, index, project}) {
   const artifacts = Array.isArray(project.evidence) ? project.evidence : [];
+  const paths = new Set(entries.map((entry) => entry.notebookPath));
   const sketch = artifacts.find((artifact) => artifact.type === 'sketch' && artifact.sketch);
   const latestChallenge = Array.isArray(project.challengeIdeas)
     ? project.challengeIdeas.at(-1)
@@ -181,8 +146,19 @@ function ProjectCard({index, project}) {
         <p>{project.question || 'This project still needs its main question.'}</p>
         <div className={styles.facts}>
           <span><b>{artifacts.length}</b> evidence {artifacts.length === 1 ? 'card' : 'cards'}</span>
+          <span><b>{paths.size}</b> {paths.size === 1 ? 'path' : 'paths'} explored</span>
           <span><b>{project.challengeIdeas?.length || 0}</b> next-version ideas</span>
         </div>
+        <div className={styles.projectUpdate}>
+          <span>Latest update</span>
+          <p>{new Date(project.updatedAt || project.createdAt).toLocaleDateString()}</p>
+        </div>
+        {project.nextAction && (
+          <div className={styles.projectUpdate}>
+            <span>Next action</span>
+            <p>{project.nextAction}</p>
+          </div>
+        )}
         {latestChallenge && (
           <div className={styles.latest}>
             <span>My next version</span>
@@ -194,6 +170,16 @@ function ProjectCard({index, project}) {
         </Link>
       </div>
     </article>
+  );
+}
+
+function entriesForProject(project, entries) {
+  const topic = String(project.topic || '').trim().toLocaleLowerCase();
+  return entries.filter(
+    (entry) =>
+      entry.parentProjectId === project.id ||
+      (!entry.parentProjectId &&
+        String(entry.topic || '').trim().toLocaleLowerCase() === topic),
   );
 }
 
