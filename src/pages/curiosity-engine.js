@@ -44,6 +44,8 @@ export default function CuriosityEngine() {
   const learnUrl = useBaseUrl('/curiosity-engine/learn');
   const buildUrl = useBaseUrl('/curiosity-engine/build');
   const investigateUrl = useBaseUrl('/curiosity-engine/investigate');
+  const createUrl = useBaseUrl('/curiosity-engine/create');
+  const shareUrl = useBaseUrl('/curiosity-engine/share');
   const initialTopic = useMemo(() => {
     const value = new URLSearchParams(location.search).get('topic');
     return value?.trim() || '';
@@ -93,6 +95,16 @@ export default function CuriosityEngine() {
 
     if (path.key === 'investigate') {
       history.push(`${investigateUrl}?topic=${encodeURIComponent(topic)}`);
+      return;
+    }
+
+    if (path.key === 'create') {
+      history.push(`${createUrl}?topic=${encodeURIComponent(topic)}`);
+      return;
+    }
+
+    if (path.key === 'share') {
+      history.push(`${shareUrl}?topic=${encodeURIComponent(topic)}`);
       return;
     }
 

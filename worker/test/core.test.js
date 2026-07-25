@@ -6,6 +6,8 @@ import {
   extractStructuredOutput,
   validateBuildRequest,
   validateInvestigationRequest,
+  validateCreateRequest,
+  validateShareRequest,
   validateLearnRequest,
 } from '../src/core.js';
 
@@ -80,6 +82,18 @@ test('validates an investigation request', () => {
       time: 'several days',
       setting: 'outdoors',
     },
+  );
+});
+
+test('validates creative and sharing requests', () => {
+  assert.equal(
+    validateCreateRequest({topic: 'space', format: 'comic'}).format,
+    'comic',
+  );
+  assert.equal(
+    validateShareRequest({topic: 'space', format: 'quiz', audience: 'family'})
+      .audience,
+    'family',
   );
 });
 

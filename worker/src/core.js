@@ -38,6 +38,22 @@ const INVESTIGATION_SETTINGS = new Set([
   'online public data',
   'school or community',
 ]);
+const CREATE_FORMATS = new Set([
+  'story',
+  'illustration',
+  'comic',
+  'video plan',
+  'digital exhibit',
+  'help me choose',
+]);
+const SHARE_FORMATS = new Set([
+  'short talk',
+  'poster',
+  'demo',
+  'quiz',
+  'mini lesson',
+  'help me choose',
+]);
 
 export class RequestError extends Error {
   constructor(message, status = 400) {
@@ -108,6 +124,35 @@ export function validateInvestigationRequest(payload) {
     setting: INVESTIGATION_SETTINGS.has(payload.setting)
       ? payload.setting
       : 'indoors',
+  };
+}
+
+export function validateCreateRequest(payload) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw new RequestError('Please send a valid creative request.');
+  }
+  return {
+    topic: cleanText(payload.topic, TOPIC_MAX_LENGTH, 'topic'),
+    ageBand: AGE_BANDS.has(payload.ageBand) ? payload.ageBand : '10-12',
+    format: CREATE_FORMATS.has(payload.format)
+      ? payload.format
+      : 'help me choose',
+    time: BUILD_TIMES.has(payload.time) ? payload.time : 'a few hours',
+  };
+}
+
+export function validateShareRequest(payload) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw new RequestError('Please send a valid sharing request.');
+  }
+  return {
+    topic: cleanText(payload.topic, TOPIC_MAX_LENGTH, 'topic'),
+    ageBand: AGE_BANDS.has(payload.ageBand) ? payload.ageBand : '10-12',
+    format: SHARE_FORMATS.has(payload.format)
+      ? payload.format
+      : 'help me choose',
+    audience: cleanText(payload.audience || 'family', 60, 'audience'),
+    time: BUILD_TIMES.has(payload.time) ? payload.time : '30 minutes',
   };
 }
 
