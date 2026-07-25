@@ -1,6 +1,6 @@
 const TOPIC_MAX_LENGTH = 100;
 const QUESTION_MAX_LENGTH = 240;
-const AGE_BANDS = new Set(['8-10', '10-12', '12-14']);
+const AGE_BANDS = new Set(['7-10', '10-12', '13-15']);
 const BUILD_TYPES = new Set([
   'physical model',
   'game',

@@ -5,10 +5,12 @@ import Link from '@docusaurus/Link';
 import {useLocation} from '@docusaurus/router';
 import CometGuide from '../../components/CometGuide';
 import DraftControls from '../../components/DraftControls';
+import ChallengeLadder from '../../components/ChallengeLadder';
 import {NextAdventure, PathJourneyMap} from '../../components/CuriosityJourney';
 import TrustNotice from '../../components/TrustNotice';
 import {upsertNotebookEntry} from '../../lib/notebookStorage';
 import {ensureProjectForTopic} from '../../lib/projectStorage';
+import {ageBandForMode, learnerModeFromSearch} from '../../lib/learnerMode';
 import {useBrowserDraft} from '../../lib/useBrowserDraft';
 import styles from './investigate.module.css';
 
@@ -21,6 +23,8 @@ const emptyRow = () => ({trial: '', condition: '', observation: '', measurement:
 export default function InvestigatePath() {
   const location = useLocation();
   const topic = useMemo(() => new URLSearchParams(location.search).get('topic')?.trim() || 'something interesting', [location.search]);
+  const learnerMode = useMemo(() => learnerModeFromSearch(location.search), [location.search]);
+  const ageBand = ageBandForMode(learnerMode);
   const resumeId = useMemo(() => new URLSearchParams(location.search).get('resume') || '', [location.search]);
   const fromPath = useMemo(() => new URLSearchParams(location.search).get('from') || '', [location.search]);
   const [investigationType, setType] = useState('help me choose');
@@ -63,7 +67,7 @@ export default function InvestigatePath() {
     try {
       const response = await fetch(`${API_URL}/api/investigate/ideas`, {
         method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({topic, ageBand: '10-12', investigationType, time, setting}),
+        body: JSON.stringify({topic, ageBand, investigationType, time, setting}),
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || 'Could not create investigations.');
@@ -121,7 +125,7 @@ export default function InvestigatePath() {
         </div></header>
         <div className={`container ${styles.content}`}>
           <DraftControls noun="investigation" onStartOver={startOver} restored={draft.restored} status={draft.status} />
-          <PathJourneyMap currentPath="investigate" fromPath={fromPath} topic={topic} />
+          <PathJourneyMap currentPath="investigate" fromPath={fromPath} mode={learnerMode} topic={topic} />
           <TrustNotice path="investigate" />
           <Journey stage={stage} />
           <CometGuide {...cometState} />
@@ -176,7 +180,8 @@ export default function InvestigatePath() {
               {saved && <Link className="button button--secondary button--lg" to="/my-lab-notebook">View My Lab Notebook</Link>}
             </Panel>
           </>}
-          <NextAdventure currentPath="investigate" saved={saved} topic={topic} />
+          <ChallengeLadder path="investigate" ready={saved} topic={topic} />
+          <NextAdventure currentPath="investigate" mode={learnerMode} saved={saved} topic={topic} />
         </div>
       </main>
     </Layout>

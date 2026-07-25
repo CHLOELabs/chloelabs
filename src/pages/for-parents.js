@@ -10,7 +10,7 @@ export default function ForParents() {
   function eraseLocalData() {
     if (
       !window.confirm(
-        'Erase every ChloeLabs notebook entry and draft stored in this browser? Download a notebook backup first if you may want it later.',
+        'Erase every ChloeLabs project, evidence card, notebook entry, and draft stored in this browser? Download a backup first if you may want it later.',
       )
     ) {
       return;
@@ -20,7 +20,7 @@ export default function ForParents() {
         .filter((key) => key.startsWith('chloelabs:'))
         .forEach((key) => window.localStorage.removeItem(key));
       window.dispatchEvent(new Event('chloelabs:notebook-changed'));
-      setMessage('All ChloeLabs notebook entries and drafts were erased from this browser.');
+      setMessage('All ChloeLabs projects, evidence, notebook entries, and drafts were erased from this browser.');
     } catch {
       setMessage('This browser could not erase its ChloeLabs data.');
     }
@@ -46,7 +46,7 @@ export default function ForParents() {
           <section className={styles.summary}>
             <article>
               <strong>Designed for</strong>
-              <p>Learners approximately 9–14 with an involved adult.</p>
+              <p>Learners ages 7–15, with adult review for safety-sensitive projects.</p>
             </article>
             <article>
               <strong>Private by default</strong>
@@ -65,6 +65,13 @@ export default function ForParents() {
               an early prototype being designed and tested with Chloe as its
               first learner. It is not a school, tutor, assessment, childcare
               service, or substitute for adult judgment.
+            </p>
+            <p>
+              Learners choose <strong>Show me</strong>,{' '}
+              <strong>Let me try</strong>, or <strong>Challenge me</strong>.
+              That choice changes the age band sent with an AI request so
+              explanations can use smaller steps or deeper questions.
+              ChloeLabs does not ask for or send a birth date.
             </p>
           </TrustSection>
 

@@ -32,14 +32,14 @@ test('validates a discovery request', () => {
       {
         topic: 'owls',
         question: 'Why do owls fly quietly?',
-        ageBand: '8-10',
+        ageBand: '7-10',
       },
       'discover',
     ),
     {
       topic: 'owls',
       question: 'Why do owls fly quietly?',
-      ageBand: '8-10',
+      ageBand: '7-10',
     },
   );
 });

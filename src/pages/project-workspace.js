@@ -4,6 +4,7 @@ import {useLocation} from '@docusaurus/router';
 import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
 import {PATHS, TopicProgress} from '../components/CuriosityJourney';
+import EvidencePlayground from '../components/EvidencePlayground';
 import {readNotebook} from '../lib/notebookStorage';
 import {
   ensureProjectForTopic,
@@ -23,7 +24,7 @@ const COMPLETION_STEPS = [
   {id: 'question', icon: '?', title: 'My question is clear', description: 'I can explain what I wanted to find out or make.', automatic: true},
   {id: 'action', icon: '⚡', title: 'I did something real', description: 'I observed, tested, built, made, interviewed, or analyzed.'},
   {id: 'record', icon: '✎', title: 'I recorded what happened', description: 'My notes describe what I actually did—not what I planned.'},
-  {id: 'evidence', icon: '◆', title: 'I have evidence or an artifact', description: 'I can point to data, a photo, code, a model, or something I made.'},
+  {id: 'evidence', icon: '◆', title: 'I have evidence or an artifact', description: 'I added proof of something I noticed, measured, changed, or made.', automatic: true},
   {id: 'reflection', icon: '↻', title: 'I reflected in my own words', description: 'I wrote what changed, surprised me, failed, or worked.'},
   {id: 'nextQuestion', icon: '→', title: 'I found my next question', description: 'This project gave me something new to wonder about.', automatic: true},
 ];
@@ -82,7 +83,7 @@ export default function ProjectWorkspace() {
       question: Boolean(project?.question?.trim()),
       action: Boolean(project?.completion?.action),
       record: Boolean(project?.completion?.record),
-      evidence: Boolean(project?.completion?.evidence),
+      evidence: Boolean(project?.evidence?.length),
       reflection: Boolean(project?.completion?.reflection),
       nextQuestion: Boolean(project?.nextQuestion?.trim()),
     }),
@@ -116,6 +117,7 @@ export default function ProjectWorkspace() {
       nextAction: project.nextAction.trim(),
       nextQuestion: project.nextQuestion?.trim() || '',
       completion: project.completion || {},
+      evidence: project.evidence || [],
       finishedAt: project.finishedAt || null,
       status: project.status,
       ...overrides,
@@ -160,6 +162,30 @@ export default function ProjectWorkspace() {
     setMessage('Project finished! Your work is still private to this browser.');
   }
 
+  function saveArtifacts(evidence) {
+    try {
+      const saved = updateProject(
+        project.id,
+        projectChanges({
+          evidence,
+          ...(project.finishedAt
+            ? {finishedAt: null, status: 'reflecting'}
+            : {}),
+        }),
+      );
+      setProject(saved);
+      setMessage(
+        evidence.length
+          ? 'Evidence board saved privately in this browser.'
+          : 'The evidence board is empty.',
+      );
+    } catch {
+      setMessage(
+        'This browser could not save that artifact. Try a smaller sketch or remove an older card.',
+      );
+    }
+  }
+
   if (!project) {
     return (
       <Layout title="Project Workspace">
@@ -173,6 +199,7 @@ export default function ProjectWorkspace() {
       topic: project.topic,
       project: project.id,
       from: 'workspace',
+      mode: project.learnerMode || 'show',
     });
     return `/curiosity-engine/${path}?${params.toString()}`;
   };
@@ -384,6 +411,12 @@ export default function ProjectWorkspace() {
             )}
           </section>
 
+          <EvidencePlayground
+            artifacts={project.evidence || []}
+            onChange={saveArtifacts}
+            topic={project.topic}
+          />
+
           <section className={styles.finishLine}>
             <div className={styles.finishHeading}>
               <div>
@@ -429,7 +462,9 @@ export default function ProjectWorkspace() {
                       <em>
                         {step.id === 'question'
                           ? 'Complete when your main question is saved.'
-                          : 'Complete when your next question is saved.'}
+                          : step.id === 'evidence'
+                            ? 'Complete when your evidence board has a card.'
+                            : 'Complete when your next question is saved.'}
                       </em>
                     )}
                   </button>

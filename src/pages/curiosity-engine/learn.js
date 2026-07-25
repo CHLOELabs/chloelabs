@@ -4,6 +4,7 @@ import Heading from '@theme/Heading';
 import Link from '@docusaurus/Link';
 import {useLocation} from '@docusaurus/router';
 import DraftControls from '../../components/DraftControls';
+import ChallengeLadder from '../../components/ChallengeLadder';
 import {
   NextAdventure,
   PathJourneyMap,
@@ -11,13 +12,13 @@ import {
 import TrustNotice from '../../components/TrustNotice';
 import {upsertNotebookEntry} from '../../lib/notebookStorage';
 import {ensureProjectForTopic} from '../../lib/projectStorage';
+import {ageBandForMode, learnerModeFromSearch} from '../../lib/learnerMode';
 import {useBrowserDraft} from '../../lib/useBrowserDraft';
 import styles from './learn.module.css';
 
 const LEARN_API_URL =
   'https://chloelabs-learn-api.chloelabs-amanda.workers.dev';
 const DEFAULT_TOPIC = 'something interesting';
-const AGE_BAND = '10-12';
 const LAB_NOTEBOOK_KEY = 'chloelabs:lab-notebook:v1';
 const LEARNING_STAGES = [
   {label: 'Start', icon: 'spark'},
@@ -33,6 +34,11 @@ export default function LearnPath() {
     const value = new URLSearchParams(location.search).get('topic');
     return value?.trim() || DEFAULT_TOPIC;
   }, [location.search]);
+  const learnerMode = useMemo(
+    () => learnerModeFromSearch(location.search),
+    [location.search],
+  );
+  const ageBand = ageBandForMode(learnerMode);
   const resumeId = useMemo(
     () => new URLSearchParams(location.search).get('resume') || '',
     [location.search],
@@ -134,7 +140,7 @@ export default function LearnPath() {
       try {
         const result = await requestLearnApi(
           '/api/learn/questions',
-          {topic, ageBand: AGE_BAND},
+          {topic, ageBand},
           controller.signal,
         );
         setQuestions(result.questions);
@@ -148,7 +154,7 @@ export default function LearnPath() {
 
     loadQuestions();
     return () => controller.abort();
-  }, [topic]);
+  }, [ageBand, topic]);
 
   function chooseQuestion(question) {
     setSelectedQuestion(question);
@@ -170,7 +176,7 @@ export default function LearnPath() {
       const result = await requestLearnApi('/api/learn/discover', {
         topic,
         question: activeQuestion,
-        ageBand: AGE_BAND,
+        ageBand,
       });
       setDiscovery(result);
       setDiscoveryStatus('ready');
@@ -265,10 +271,11 @@ export default function LearnPath() {
             restored={draft.restored}
             status={draft.status}
           />
-          <PathJourneyMap
-            currentPath="learn"
-            fromPath={fromPath}
-            topic={topic}
+            <PathJourneyMap
+              currentPath="learn"
+              fromPath={fromPath}
+              mode={learnerMode}
+              topic={topic}
           />
           <TrustNotice path="learn" />
           <aside className={styles.aiNotice}>
@@ -584,7 +591,8 @@ export default function LearnPath() {
               </section>
             </>
           )}
-          <NextAdventure currentPath="learn" saved={saved} topic={topic} />
+          <ChallengeLadder path="learn" ready={saved} topic={topic} />
+          <NextAdventure currentPath="learn" mode={learnerMode} saved={saved} topic={topic} />
         </div>
       </main>
     </Layout>

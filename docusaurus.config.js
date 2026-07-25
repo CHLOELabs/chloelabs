@@ -80,6 +80,11 @@ const config = {
             label: 'Bytelets',
           },
           {
+            to: '/my-projects',
+            label: 'My Projects',
+            position: 'left',
+          },
+          {
             to: '/my-lab-notebook',
             label: 'My Lab Notebook',
             position: 'left',
@@ -97,6 +102,10 @@ const config = {
               {
                 label: 'Bytelets',
                 to: '/docs/intro',
+              },
+              {
+                label: 'My Projects',
+                to: '/my-projects',
               },
               {
                 label: 'My Lab Notebook',

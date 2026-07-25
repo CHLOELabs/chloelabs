@@ -6,7 +6,9 @@ import Heading from '@theme/Heading';
 import {
   ensureProjectForTopic,
   projectLink,
+  updateProject,
 } from '../lib/projectStorage';
+import {LEARNER_MODES, learnerModeFromSearch} from '../lib/learnerMode';
 import styles from './curiosity-engine.module.css';
 
 const paths = [
@@ -78,6 +80,9 @@ export default function CuriosityEngine() {
   const [curiosity, setCuriosity] = useState(initialTopic);
   const [topic, setTopic] = useState(initialTopic);
   const [project, setProject] = useState(null);
+  const [learnerMode, setLearnerMode] = useState(() =>
+    learnerModeFromSearch(location.search),
+  );
   const [surpriseIndex, setSurpriseIndex] = useState(0);
   const [revealRequest, setRevealRequest] = useState(0);
   const resultsHeadingRef = useRef(null);
@@ -126,7 +131,8 @@ export default function CuriosityEngine() {
 
   function choosePath(path) {
     const activeProject = project || ensureProjectForTopic(topic);
-    const query = `?topic=${encodeURIComponent(topic)}&project=${encodeURIComponent(activeProject.id)}`;
+    updateProject(activeProject.id, {learnerMode});
+    const query = `?topic=${encodeURIComponent(topic)}&project=${encodeURIComponent(activeProject.id)}&mode=${encodeURIComponent(learnerMode)}`;
     if (path.key === 'learn') {
       history.push(`${learnUrl}${query}`);
       return;
@@ -220,6 +226,28 @@ export default function CuriosityEngine() {
                 What could you do with “{topic}”?
               </Heading>
               <p>Tap the one that makes you want to start.</p>
+
+              <div className={styles.modePicker}>
+                <div>
+                  <span>How do you want the challenge?</span>
+                  <small>You can change this any time.</small>
+                </div>
+                <div>
+                  {LEARNER_MODES.map((mode) => (
+                    <button
+                      aria-pressed={learnerMode === mode.id}
+                      className={
+                        learnerMode === mode.id ? styles.modeSelected : ''
+                      }
+                      key={mode.id}
+                      onClick={() => setLearnerMode(mode.id)}
+                      type="button">
+                      <strong>{mode.label}</strong>
+                      <small>{mode.description}</small>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <div className={styles.pathGrid}>
                 {paths.map((path) => (

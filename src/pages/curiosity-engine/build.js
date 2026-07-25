@@ -4,6 +4,7 @@ import Heading from '@theme/Heading';
 import Link from '@docusaurus/Link';
 import {useLocation} from '@docusaurus/router';
 import DraftControls from '../../components/DraftControls';
+import ChallengeLadder from '../../components/ChallengeLadder';
 import {
   NextAdventure,
   PathJourneyMap,
@@ -11,11 +12,11 @@ import {
 import TrustNotice from '../../components/TrustNotice';
 import {upsertNotebookEntry} from '../../lib/notebookStorage';
 import {ensureProjectForTopic} from '../../lib/projectStorage';
+import {ageBandForMode, learnerModeFromSearch} from '../../lib/learnerMode';
 import {useBrowserDraft} from '../../lib/useBrowserDraft';
 import styles from './build.module.css';
 
 const API_URL = 'https://chloelabs-learn-api.chloelabs-amanda.workers.dev';
-const AGE_BAND = '10-12';
 const NOTEBOOK_KEY = 'chloelabs:build-notebook:v1';
 const typeOptions = [
   ['physical model', 'Model', 'Build something you can hold'],
@@ -41,6 +42,11 @@ export default function BuildPath() {
     const value = new URLSearchParams(location.search).get('topic');
     return value?.trim() || 'something interesting';
   }, [location.search]);
+  const learnerMode = useMemo(
+    () => learnerModeFromSearch(location.search),
+    [location.search],
+  );
+  const ageBand = ageBandForMode(learnerMode);
   const resumeId = useMemo(
     () => new URLSearchParams(location.search).get('resume') || '',
     [location.search],
@@ -160,7 +166,7 @@ export default function BuildPath() {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           topic,
-          ageBand: AGE_BAND,
+          ageBand,
           buildType,
           time,
           difficulty,
@@ -259,6 +265,7 @@ export default function BuildPath() {
           <PathJourneyMap
             currentPath="build"
             fromPath={fromPath}
+            mode={learnerMode}
             topic={topic}
           />
           <TrustNotice path="build" />
@@ -516,7 +523,8 @@ export default function BuildPath() {
               </section>
             </>
           )}
-          <NextAdventure currentPath="build" saved={saved} topic={topic} />
+          <ChallengeLadder path="build" ready={saved} topic={topic} />
+          <NextAdventure currentPath="build" mode={learnerMode} saved={saved} topic={topic} />
         </div>
       </main>
     </Layout>

@@ -53,6 +53,7 @@ export function ensureProjectForTopic(topic) {
     nextAction: '',
     nextQuestion: '',
     completion: {},
+    evidence: [],
     finishedAt: null,
     status: 'exploring',
     createdAt: now,

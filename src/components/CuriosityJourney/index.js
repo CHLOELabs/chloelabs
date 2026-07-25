@@ -65,7 +65,7 @@ export function useTopicProgress(topic) {
   }, [entries, topic]);
 }
 
-export function PathJourneyMap({currentPath, fromPath, topic}) {
+export function PathJourneyMap({currentPath, fromPath, mode = 'show', topic}) {
   const completed = useTopicProgress(topic);
   return (
     <section className={styles.journey} aria-label={`${topic} curiosity journey`}>
@@ -92,7 +92,7 @@ export function PathJourneyMap({currentPath, fromPath, topic}) {
               aria-current={isCurrent ? 'step' : undefined}
               className={`${styles.path} ${isComplete ? styles.complete : ''} ${isCurrent ? styles.current : ''}`}
               key={path.id}
-              to={`/curiosity-engine/${path.id}?topic=${encodeURIComponent(topic)}&from=${encodeURIComponent(currentPath)}`}>
+              to={`/curiosity-engine/${path.id}?topic=${encodeURIComponent(topic)}&from=${encodeURIComponent(currentPath)}&mode=${encodeURIComponent(mode)}`}>
               <span>{isComplete ? '✓' : path.icon}</span>
               <small>{path.label}</small>
             </Link>
@@ -108,7 +108,7 @@ export function PathJourneyMap({currentPath, fromPath, topic}) {
   );
 }
 
-export function NextAdventure({currentPath, saved, topic}) {
+export function NextAdventure({currentPath, mode = 'show', saved, topic}) {
   const panelRef = useRef(null);
   const wasSaved = useRef(saved);
 
@@ -137,7 +137,7 @@ export function NextAdventure({currentPath, saved, topic}) {
         {options.map(([path, title, description]) => (
           <Link
             key={path}
-            to={`/curiosity-engine/${path}?topic=${encodeURIComponent(topic)}&from=${encodeURIComponent(currentPath)}`}>
+            to={`/curiosity-engine/${path}?topic=${encodeURIComponent(topic)}&from=${encodeURIComponent(currentPath)}&mode=${encodeURIComponent(mode)}`}>
             <span>{PATHS.find((item) => item.id === path)?.icon}</span>
             <strong>{title}</strong>
             <small>{description}</small>
