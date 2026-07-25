@@ -8,6 +8,7 @@ import {
   NextAdventure,
   PathJourneyMap,
 } from '../../components/CuriosityJourney';
+import TrustNotice from '../../components/TrustNotice';
 import {upsertNotebookEntry} from '../../lib/notebookStorage';
 import {useBrowserDraft} from '../../lib/useBrowserDraft';
 import styles from './learn.module.css';
@@ -267,6 +268,7 @@ export default function LearnPath() {
             fromPath={fromPath}
             topic={topic}
           />
+          <TrustNotice path="learn" />
           <aside className={styles.aiNotice}>
             <strong>AI-guided, human-powered</strong>
             <span>

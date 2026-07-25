@@ -84,6 +84,7 @@ const config = {
             label: 'My Lab Notebook',
             position: 'left',
           },
+          {to: '/for-parents', label: 'For Parents', position: 'left'},
           {to: '/blog', label: 'Insights', position: 'left'},
         ],
       },
@@ -100,6 +101,10 @@ const config = {
               {
                 label: 'My Lab Notebook',
                 to: '/my-lab-notebook',
+              },
+              {
+                label: 'For Parents',
+                to: '/for-parents',
               },
             ],
           },

@@ -3,6 +3,7 @@ import {
   corsHeaders,
   extractStructuredOutput,
   jsonResponse,
+  privacySafeOpenAIRequest,
   validateBuildRequest,
   validateInvestigationRequest,
   validateCreateRequest,
@@ -508,7 +509,7 @@ async function callOpenAI(body, apiKey) {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify(privacySafeOpenAIRequest(body)),
   });
 
   const data = await response.json();

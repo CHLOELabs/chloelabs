@@ -4,12 +4,20 @@ import {
   RequestError,
   corsHeaders,
   extractStructuredOutput,
+  privacySafeOpenAIRequest,
   validateBuildRequest,
   validateInvestigationRequest,
   validateCreateRequest,
   validateShareRequest,
   validateLearnRequest,
 } from '../src/core.js';
+
+test('forces OpenAI application-state storage off', () => {
+  assert.deepEqual(
+    privacySafeOpenAIRequest({model: 'test-model', store: true}),
+    {model: 'test-model', store: false},
+  );
+});
 
 test('validates a questions request and defaults the age band', () => {
   assert.deepEqual(

@@ -6,6 +6,7 @@ import {useLocation} from '@docusaurus/router';
 import CometGuide from '../../components/CometGuide';
 import DraftControls from '../../components/DraftControls';
 import {NextAdventure, PathJourneyMap} from '../../components/CuriosityJourney';
+import TrustNotice from '../../components/TrustNotice';
 import {upsertNotebookEntry} from '../../lib/notebookStorage';
 import {useBrowserDraft} from '../../lib/useBrowserDraft';
 import styles from './investigate.module.css';
@@ -120,6 +121,7 @@ export default function InvestigatePath() {
         <div className={`container ${styles.content}`}>
           <DraftControls noun="investigation" onStartOver={startOver} restored={draft.restored} status={draft.status} />
           <PathJourneyMap currentPath="investigate" fromPath={fromPath} topic={topic} />
+          <TrustNotice path="investigate" />
           <Journey stage={stage} />
           <CometGuide {...cometState} />
           <Panel number="1" title="Design your investigation">

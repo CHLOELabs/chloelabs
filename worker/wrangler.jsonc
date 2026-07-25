@@ -4,7 +4,10 @@
   "main": "src/index.js",
   "compatibility_date": "2026-07-24",
   "observability": {
-    "enabled": true
+    "enabled": true,
+    "logs": {
+      "invocation_logs": false
+    }
   },
   "vars": {
     "OPENAI_MODEL": "gpt-5.4-mini",

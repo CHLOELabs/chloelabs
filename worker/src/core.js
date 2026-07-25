@@ -195,6 +195,10 @@ export function jsonResponse(body, status, headers = {}) {
   });
 }
 
+export function privacySafeOpenAIRequest(body) {
+  return {...body, store: false};
+}
+
 function cleanText(value, maxLength, label) {
   if (typeof value !== 'string') {
     throw new RequestError(`Please enter a ${label}.`);

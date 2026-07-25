@@ -8,6 +8,7 @@ import {
   NextAdventure,
   PathJourneyMap,
 } from '../../components/CuriosityJourney';
+import TrustNotice from '../../components/TrustNotice';
 import {upsertNotebookEntry} from '../../lib/notebookStorage';
 import {useBrowserDraft} from '../../lib/useBrowserDraft';
 import styles from './build.module.css';
@@ -258,6 +259,7 @@ export default function BuildPath() {
             fromPath={fromPath}
             topic={topic}
           />
+          <TrustNotice path="build" />
           <BuildJourney stage={stage} />
 
           <section className={styles.panel}>
