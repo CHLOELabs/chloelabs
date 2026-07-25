@@ -1,6 +1,23 @@
 const TOPIC_MAX_LENGTH = 100;
 const QUESTION_MAX_LENGTH = 240;
 const AGE_BANDS = new Set(['8-10', '10-12', '12-14']);
+const BUILD_TYPES = new Set([
+  'physical model',
+  'game',
+  'interactive webpage',
+  'diagram or animation',
+  'simple tool',
+  'help me choose',
+]);
+const BUILD_TIMES = new Set(['30 minutes', 'a few hours', 'several days']);
+const BUILD_LEVELS = new Set(['starter', 'growing', 'challenge']);
+const BUILD_TOOLS = new Set([
+  'craft materials',
+  'computer',
+  'coding',
+  'building materials',
+  'household materials',
+]);
 
 export class RequestError extends Error {
   constructor(message, status = 400) {
@@ -29,6 +46,30 @@ export function validateLearnRequest(payload, mode) {
   );
 
   return {topic, question, ageBand};
+}
+
+export function validateBuildRequest(payload) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw new RequestError('Please send a valid build request.');
+  }
+
+  const topic = cleanText(payload.topic, TOPIC_MAX_LENGTH, 'topic');
+  const ageBand = AGE_BANDS.has(payload.ageBand) ? payload.ageBand : '10-12';
+  const buildType = BUILD_TYPES.has(payload.buildType)
+    ? payload.buildType
+    : 'help me choose';
+  const time = BUILD_TIMES.has(payload.time) ? payload.time : 'a few hours';
+  const difficulty = BUILD_LEVELS.has(payload.difficulty)
+    ? payload.difficulty
+    : 'growing';
+  const tools = Array.isArray(payload.tools)
+    ? [...new Set(payload.tools.filter((tool) => BUILD_TOOLS.has(tool)))].slice(
+        0,
+        5,
+      )
+    : [];
+
+  return {topic, ageBand, buildType, time, difficulty, tools};
 }
 
 export function extractStructuredOutput(response) {

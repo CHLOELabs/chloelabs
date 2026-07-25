@@ -4,6 +4,7 @@ import {
   RequestError,
   corsHeaders,
   extractStructuredOutput,
+  validateBuildRequest,
   validateLearnRequest,
 } from '../src/core.js';
 
@@ -40,6 +41,26 @@ test('rejects missing and oversized input', () => {
   assert.throws(
     () => validateLearnRequest({topic: 'x'.repeat(101)}, 'questions'),
     RequestError,
+  );
+});
+
+test('validates and limits a build request', () => {
+  assert.deepEqual(
+    validateBuildRequest({
+      topic: ' volcanoes ',
+      buildType: 'physical model',
+      time: 'a few hours',
+      difficulty: 'growing',
+      tools: ['craft materials', 'computer', 'not allowed'],
+    }),
+    {
+      topic: 'volcanoes',
+      ageBand: '10-12',
+      buildType: 'physical model',
+      time: 'a few hours',
+      difficulty: 'growing',
+      tools: ['craft materials', 'computer'],
+    },
   );
 });
 
