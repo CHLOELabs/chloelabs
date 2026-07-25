@@ -2,7 +2,7 @@
 slug: first-blog-post
 title: Building Big Futures, Byte-by-Byte
 authors: [amandatan]
-tags: [hola]
+tags: [chloelabs]
 ---
 
 **Hello, and welcome to ChloeLabs!**
@@ -38,5 +38,3 @@ Over the coming weeks, I’ll be sharing bite-sized lessons (or Bytelets!), tips
 I’m thrilled to start this journey and excited to see what we can build together. Stay tuned for tutorials, blog posts, and creative projects that inspire young learners to dream big and build bigger.
 
 Let’s shape the future, one byte at a time.
-
-
