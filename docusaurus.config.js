@@ -74,6 +74,11 @@ const config = {
         },
         items: [
           {
+            to: '/missions',
+            label: 'Missions',
+            position: 'left',
+          },
+          {
             type: 'docSidebar',
             sidebarId: 'tutorialSidebar',
             position: 'left',

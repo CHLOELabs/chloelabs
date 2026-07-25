@@ -1,0 +1,63 @@
+.page{background:#f6f1e7;min-height:75vh}
+.hero{background:linear-gradient(135deg,#173f49,#246457);color:#fff;padding:3.5rem 1rem}
+.hero :global(.container),.content{max-width:1000px}
+.hero :global(.container)>a{color:#fff;display:block;font-weight:800;margin-bottom:1.5rem}
+.hero>div>span,.gameLabel,.discovery>div>span{color:#f5a24a;font-size:.72rem;font-weight:900;letter-spacing:.11em;text-transform:uppercase}
+.hero h1{color:#fff;font-size:clamp(2.7rem,7vw,5rem);line-height:1;margin:.4rem 0 1rem}
+.hero p{font-size:1.18rem}
+.meta{display:flex;flex-wrap:wrap;gap:.55rem}
+.meta b{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);border-radius:999px;font-size:.78rem;padding:.45rem .7rem}
+.content{padding-bottom:5rem;padding-top:2rem}
+.brief,.steps,.game,.discovery,.save{background:#fff;border:2px solid #deddd5;border-radius:1.1rem;margin-bottom:1.2rem;padding:1.5rem}
+.brief{display:grid;gap:2rem;grid-template-columns:1.4fr 1fr}
+.brief h2,.steps h2,.game h2,.discovery h2,.save h2{color:#173f49}
+.brief p{font-size:1.08rem}
+.brief ul{margin-bottom:0}
+.steps ol{display:grid;gap:.65rem;grid-template-columns:repeat(5,1fr);list-style:none;padding:0}
+.steps li{background:#eef6f2;border-radius:.75rem;padding:.9rem}
+.steps li:before{align-items:center;background:#ef9338;border-radius:50%;color:#fff;content:counter(list-item);display:flex;font-weight:900;height:1.8rem;justify-content:center;margin-bottom:.5rem;width:1.8rem}
+.game{border-color:#efb065}
+.route{align-items:start;display:grid;gap:.4rem;grid-template-columns:repeat(5,1fr);margin:1.4rem 0}
+.routeStop{align-items:center;color:#68736f;display:flex;flex-direction:column;position:relative;text-align:center}
+.routeStop:not(:last-child):after{background:#d5d8d3;content:"";height:4px;left:65%;position:absolute;top:1.15rem;width:70%}
+.routeStop span{align-items:center;background:#fff;border:3px solid #c8cec8;border-radius:50%;display:flex;font-weight:900;height:2.5rem;justify-content:center;margin-bottom:.35rem;width:2.5rem;z-index:1}
+.routeStop.reached{color:#173f49}
+.routeStop.reached span{background:#28745f;border-color:#28745f;color:#fff}
+.routeStop.reached:not(:last-child):after{background:#f19a3e}
+.controls{display:grid;gap:.7rem;grid-template-columns:repeat(3,1fr)}
+.controls button{align-items:center;background:#fff8e9;border:2px solid #e4c899;border-radius:.9rem;color:#173f49;cursor:pointer;display:flex;font:inherit;font-weight:900;gap:.6rem;justify-content:center;min-height:70px;padding:.7rem}
+.controls button:hover:not(:disabled),.controls button:focus-visible{background:#ffe5bb;border-color:#ef9338}
+.controls button:disabled{cursor:not-allowed;opacity:.55}
+.controls button:first-child{font-size:1.4rem}
+.controls button span{font-size:.86rem}
+.feedback{align-items:center;background:#173f49;border-radius:.8rem;color:#fff;display:flex;gap:.7rem;justify-content:space-between;margin-top:1rem;padding:.85rem 1rem}
+.gameActions{display:flex;gap:.6rem;margin-top:1rem}
+.hint{background:#fff3df;border-left:4px solid #ef9338;margin:1rem 0 0;padding:.8rem}
+.discovery{display:grid;gap:1.2rem;grid-template-columns:1.5fr 1fr}
+.discovery aside{background:#173f49;border-radius:.8rem;color:#fff;padding:1rem}
+.discovery aside strong{color:#f5a24a}
+.discovery aside p{margin:.4rem 0 0}
+.save label{display:block;font-weight:800;margin:1rem 0}
+.save label span{color:#68736f;font-size:.76rem;font-weight:500}
+.save input{border:2px solid #cfd2cc;border-radius:.6rem;display:block;font:inherit;margin-top:.35rem;padding:.75rem;width:100%}
+.save input:focus{border-color:#28745f;box-shadow:0 0 0 3px rgba(40,116,95,.17);outline:none}
+.save>small{display:block;margin-top:.5rem}
+.saved{background:#e7f5ed;border-left:4px solid #28745f;padding:.8rem}
+.attempts{border-top:1px solid #ddd;margin-top:1.5rem;padding-top:1rem}
+.attempts article{background:#f6f1e7;border-radius:.7rem;margin-top:.6rem;padding:.8rem}
+.attempts article span{float:right;font-size:.8rem}
+.attempts article p{margin:.3rem 0 0}
+.notFound{padding:6rem 1rem;text-align:center}
+@media(max-width:760px){.brief,.discovery{grid-template-columns:1fr}
+.steps ol{grid-template-columns:1fr}
+.routeStop b{font-size:.72rem}
+.controls{grid-template-columns:1fr}
+.feedback{align-items:flex-start;flex-direction:column}
+.gameActions{align-items:stretch;flex-direction:column}
+}
+@media(max-width:500px){.hero{padding:2.75rem 1rem}
+.content{padding-inline:1rem}
+.brief,.steps,.game,.discovery,.save{padding:1.1rem}
+.routeStop span{height:2rem;width:2rem}
+.routeStop:not(:last-child):after{top:.9rem}
+}

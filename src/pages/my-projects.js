@@ -2,6 +2,8 @@ import {useEffect, useState} from 'react';
 import Link from '@docusaurus/Link';
 import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
+import {getMission} from '../data/missions';
+import {readMissionAttempts} from '../lib/missionStorage';
 import {readProjects, projectLink} from '../lib/projectStorage';
 import styles from './my-projects.module.css';
 
@@ -15,15 +17,21 @@ const STATUS = {
 
 export default function MyProjects() {
   const [projects, setProjects] = useState([]);
+  const [missionAttempts, setMissionAttempts] = useState([]);
 
   useEffect(() => {
-    const refresh = () => setProjects(readProjects());
+    const refresh = () => {
+      setProjects(readProjects());
+      setMissionAttempts(readMissionAttempts());
+    };
     refresh();
     window.addEventListener('storage', refresh);
     window.addEventListener('chloelabs:projects-changed', refresh);
+    window.addEventListener('chloelabs:mission-attempts-changed', refresh);
     return () => {
       window.removeEventListener('storage', refresh);
       window.removeEventListener('chloelabs:projects-changed', refresh);
+      window.removeEventListener('chloelabs:mission-attempts-changed', refresh);
     };
   }, []);
 
@@ -88,6 +96,46 @@ export default function MyProjects() {
               <Link className="button button--primary button--lg" to="/curiosity-engine">
                 Find something to try
               </Link>
+            </section>
+          )}
+
+          {missionAttempts.length > 0 && (
+            <section className={styles.missionAttempts}>
+              <div className={styles.missionAttemptsHeading}>
+                <div>
+                  <span>Technology missions</span>
+                  <Heading as="h2">My mission attempts</Heading>
+                </div>
+                <Link to="/missions">Try another mission →</Link>
+              </div>
+              <div className={styles.attemptGrid}>
+                {missionAttempts
+                  .slice()
+                  .reverse()
+                  .map((attempt) => {
+                    const mission = getMission(attempt.missionId);
+                    if (!mission) return null;
+                    return (
+                      <article key={attempt.id}>
+                        <span>Attempt {attempt.attemptNumber}</span>
+                        <Heading as="h3">{mission.title}</Heading>
+                        <p>
+                          {attempt.caption ||
+                            attempt.result ||
+                            mission.outcome}
+                        </p>
+                        <small>
+                          Saved {new Date(attempt.date).toLocaleDateString()}
+                        </small>
+                        <Link
+                          className="button button--secondary button--sm"
+                          to={`/missions/mission?id=${mission.id}`}>
+                          Try this mission again
+                        </Link>
+                      </article>
+                    );
+                  })}
+              </div>
             </section>
           )}
 

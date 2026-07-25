@@ -1,0 +1,18 @@
+.grid{display:grid;gap:1.1rem;grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{background:#fff;border:2px solid #deddd5;border-radius:1.2rem;box-shadow:0 9px 24px rgba(26,60,54,.08);display:flex;flex-direction:column;overflow:hidden}
+.art{background:linear-gradient(135deg,#cfece2,#ffe0b8);height:120px;overflow:hidden;position:relative}
+.art>span{color:#173f49;font-size:3.8rem;font-weight:900;left:1.2rem;position:absolute;top:1rem;z-index:2}
+.art i{border:3px solid rgba(23,63,73,.16);border-radius:50%;height:110px;position:absolute;right:-20px;top:-32px;width:110px}
+.art i:last-child{height:55px;right:72px;top:60px;width:55px}
+.body{display:flex;flex:1;flex-direction:column;padding:1.2rem}
+.category{color:#b85f14;font-size:.7rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+.body h3{color:#173f49;font-size:1.25rem;margin:.35rem 0}
+.body>p{margin:0 0 1rem}
+.body dl{display:grid;gap:.45rem;margin:auto 0 1rem}
+.body dl>div{display:grid;grid-template-columns:62px 1fr}
+.body dt{font-size:.72rem;font-weight:900;text-transform:uppercase}
+.body dd{font-size:.82rem;margin:0}
+.body :global(.button){align-self:flex-start}
+.upcoming{align-self:flex-start;background:#edf3ef;border-radius:999px;color:#47605b;font-size:.78rem;font-weight:800;padding:.5rem .7rem}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.card{display:grid;grid-template-columns:100px 1fr}.art{height:100%}.art>span{font-size:2.7rem;left:1rem}.body{padding:1rem}}

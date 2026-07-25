@@ -37,9 +37,9 @@ function Feature({Svg, label, title, description}) {
   );
 }
 
-export default function HomepageFeatures() {
+export default function HomepageFeatures({id}) {
   return (
-    <section className={styles.features}>
+    <section className={styles.features} id={id}>
       <div className="container">
         <div className={styles.heading}>
           <span>No points. No streaks. Just better ideas.</span>
