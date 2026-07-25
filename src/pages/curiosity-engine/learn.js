@@ -4,6 +4,10 @@ import Heading from '@theme/Heading';
 import Link from '@docusaurus/Link';
 import {useLocation} from '@docusaurus/router';
 import DraftControls from '../../components/DraftControls';
+import {
+  NextAdventure,
+  PathJourneyMap,
+} from '../../components/CuriosityJourney';
 import {upsertNotebookEntry} from '../../lib/notebookStorage';
 import {useBrowserDraft} from '../../lib/useBrowserDraft';
 import styles from './learn.module.css';
@@ -29,6 +33,10 @@ export default function LearnPath() {
   }, [location.search]);
   const resumeId = useMemo(
     () => new URLSearchParams(location.search).get('resume') || '',
+    [location.search],
+  );
+  const fromPath = useMemo(
+    () => new URLSearchParams(location.search).get('from') || '',
     [location.search],
   );
 
@@ -253,6 +261,11 @@ export default function LearnPath() {
             onStartOver={startOver}
             restored={draft.restored}
             status={draft.status}
+          />
+          <PathJourneyMap
+            currentPath="learn"
+            fromPath={fromPath}
+            topic={topic}
           />
           <aside className={styles.aiNotice}>
             <strong>AI-guided, human-powered</strong>
@@ -567,6 +580,7 @@ export default function LearnPath() {
               </section>
             </>
           )}
+          <NextAdventure currentPath="learn" saved={saved} topic={topic} />
         </div>
       </main>
     </Layout>

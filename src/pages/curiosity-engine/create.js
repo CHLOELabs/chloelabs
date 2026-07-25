@@ -5,6 +5,7 @@ import Link from '@docusaurus/Link';
 import {useLocation} from '@docusaurus/router';
 import CometGuide from '../../components/CometGuide';
 import DraftControls from '../../components/DraftControls';
+import {NextAdventure, PathJourneyMap} from '../../components/CuriosityJourney';
 import {upsertNotebookEntry} from '../../lib/notebookStorage';
 import {useBrowserDraft} from '../../lib/useBrowserDraft';
 import styles from './creativePaths.module.css';
@@ -17,6 +18,7 @@ export default function CreatePath(){
   const location=useLocation();
   const topic=useMemo(()=>new URLSearchParams(location.search).get('topic')?.trim()||'something interesting',[location.search]);
   const resumeId=useMemo(()=>new URLSearchParams(location.search).get('resume')||'',[location.search]);
+  const fromPath=useMemo(()=>new URLSearchParams(location.search).get('from')||'',[location.search]);
   const [format,setFormat]=useState('help me choose'),[time,setTime]=useState('a few hours');
   const [ideas,setIdeas]=useState([]),[idea,setIdea]=useState(null),[drafts,setDrafts]=useState([]),[reflection,setReflection]=useState('');
   const [status,setStatus]=useState('idle'),[error,setError]=useState(''),[saved,setSaved]=useState(false);
@@ -30,11 +32,12 @@ export default function CreatePath(){
   const message=saved?'Your creation is saved! You took an idea through drafting and revision—studio magic complete.':idea?completed?`${completed} of ${idea.steps.length} creative stars are glowing. Keep making choices that feel like yours.`:'The storyboard is ready. I supplied the structure; you supply every original idea.':ideas.length?'Pick the concept that makes your imagination start moving.':'Choose a format and I’ll help you find three ways to transform curiosity into something original.';
   return <Layout title={`Create something about ${topic}`}><main className={`${styles.page} ${styles.createPage}`}>
     <header className={styles.hero}><div className="container"><Link className={styles.back} to={`/curiosity-engine?topic=${encodeURIComponent(topic)}`}>← Choose another path</Link><span>Create path</span><Heading as="h1">Create with {topic}</Heading><p>Imagine it. Draft it. Shape it into something only you would make.</p></div></header>
-    <div className={`container ${styles.content}`}><DraftControls noun="creation" onStartOver={startOver} restored={draft.restored} status={draft.status}/><CometGuide role="studio" mood={saved?'celebrate':'thinking'} badge={saved?'Creation saved':'Idea studio'} message={message}/>
+    <div className={`container ${styles.content}`}><DraftControls noun="creation" onStartOver={startOver} restored={draft.restored} status={draft.status}/><PathJourneyMap currentPath="create" fromPath={fromPath} topic={topic}/><CometGuide role="studio" mood={saved?'celebrate':'thinking'} badge={saved?'Creation saved':'Idea studio'} message={message}/>
       <Panel n="1" title="Choose your creative canvas"><Chooser label="What might you create?" options={formats} value={format} set={setFormat}/><Chooser label="How much time?" options={times} value={time} set={setTime}/><button className="button button--primary button--lg" disabled={status==='loading'} onClick={generate}>{status==='loading'?'Mixing possibilities…':'Create three concepts'}</button>{error&&<p className={styles.error}>{error}</p>}</Panel>
       {ideas.length>0&&<Panel n="2" title="Choose your creative spark"><div className={styles.ideaGrid}>{ideas.map((item,index)=><button key={item.title} className={`${styles.idea} ${idea?.title===item.title?styles.selected:''}`} onClick={()=>choose(item)} aria-pressed={idea?.title===item.title}><b>✦ 0{index+1}</b><small>{item.format}</small><strong>{item.title}</strong><span>{item.concept}</span></button>)}</div></Panel>}
       {idea&&<><CreativeConstellation steps={idea.steps} drafts={drafts}/><Panel n="3" title="Build your storyboard"><div className={styles.prompt}><small>Creative spark—not finished content</small><p>{idea.creativePrompt}</p></div><div className={styles.storyboard}>{idea.steps.map((step,index)=><label key={step}><span><b>{index+1}</b>{step}</span><textarea value={drafts[index]} onChange={e=>setDrafts(current=>current.map((v,i)=>i===index?e.target.value:v))} placeholder="My original idea…" rows={3}/></label>)}</div></Panel>
       <Panel n="4" title="Revise and finish"><div className={styles.finishCard}><small>Finished looks like</small><p>{idea.finishedLooksLike}</p><b>Materials: {idea.materials.join(', ')}</b></div><label className={styles.label}>What choice made this creation feel like yours?<textarea className={styles.textarea} value={reflection} onChange={e=>{setReflection(e.target.value);setSaved(false)}} rows={4} placeholder="It became mine when I…"/></label><button className="button button--primary button--lg" disabled={!reflection.trim()} onClick={save}>Save to my Creation Notebook</button>{saved&&<><p className={styles.saved}>✦ Creation saved in this browser.</p><Link className="button button--secondary button--lg" to="/my-lab-notebook">View My Lab Notebook</Link></>}</Panel></>}
+      <NextAdventure currentPath="create" saved={saved} topic={topic}/>
     </div></main></Layout>
 }
 function CreativeConstellation({steps,drafts}){return <section className={styles.constellation} aria-label="Creative constellation"><div className={styles.moon}>My idea</div><svg viewBox="0 0 700 180" preserveAspectRatio="none" aria-hidden="true"><path d="M70 95 L190 35 L330 120 L475 45 L625 100"/></svg>{steps.map((step,index)=><div key={step} className={`${styles.star} ${drafts[index]?.trim()?styles.starOn:''}`} style={{left:`${8+index*(82/Math.max(steps.length-1,1))}%`,top:index%2? '18%':'58%'}}><span>★</span><small>{index+1}</small></div>)}</section>}

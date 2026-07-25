@@ -4,6 +4,10 @@ import Heading from '@theme/Heading';
 import Link from '@docusaurus/Link';
 import {useLocation} from '@docusaurus/router';
 import DraftControls from '../../components/DraftControls';
+import {
+  NextAdventure,
+  PathJourneyMap,
+} from '../../components/CuriosityJourney';
 import {upsertNotebookEntry} from '../../lib/notebookStorage';
 import {useBrowserDraft} from '../../lib/useBrowserDraft';
 import styles from './build.module.css';
@@ -37,6 +41,10 @@ export default function BuildPath() {
   }, [location.search]);
   const resumeId = useMemo(
     () => new URLSearchParams(location.search).get('resume') || '',
+    [location.search],
+  );
+  const fromPath = useMemo(
+    () => new URLSearchParams(location.search).get('from') || '',
     [location.search],
   );
   const [buildType, setBuildType] = useState('help me choose');
@@ -244,6 +252,11 @@ export default function BuildPath() {
             onStartOver={startOver}
             restored={draft.restored}
             status={draft.status}
+          />
+          <PathJourneyMap
+            currentPath="build"
+            fromPath={fromPath}
+            topic={topic}
           />
           <BuildJourney stage={stage} />
 
@@ -499,6 +512,7 @@ export default function BuildPath() {
               </section>
             </>
           )}
+          <NextAdventure currentPath="build" saved={saved} topic={topic} />
         </div>
       </main>
     </Layout>

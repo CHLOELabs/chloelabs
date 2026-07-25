@@ -5,6 +5,7 @@ import Link from '@docusaurus/Link';
 import {useLocation} from '@docusaurus/router';
 import CometGuide from '../../components/CometGuide';
 import DraftControls from '../../components/DraftControls';
+import {NextAdventure, PathJourneyMap} from '../../components/CuriosityJourney';
 import {upsertNotebookEntry} from '../../lib/notebookStorage';
 import {useBrowserDraft} from '../../lib/useBrowserDraft';
 import styles from './investigate.module.css';
@@ -19,6 +20,7 @@ export default function InvestigatePath() {
   const location = useLocation();
   const topic = useMemo(() => new URLSearchParams(location.search).get('topic')?.trim() || 'something interesting', [location.search]);
   const resumeId = useMemo(() => new URLSearchParams(location.search).get('resume') || '', [location.search]);
+  const fromPath = useMemo(() => new URLSearchParams(location.search).get('from') || '', [location.search]);
   const [investigationType, setType] = useState('help me choose');
   const [time, setTime] = useState('one day');
   const [setting, setSetting] = useState('indoors');
@@ -117,6 +119,7 @@ export default function InvestigatePath() {
         </div></header>
         <div className={`container ${styles.content}`}>
           <DraftControls noun="investigation" onStartOver={startOver} restored={draft.restored} status={draft.status} />
+          <PathJourneyMap currentPath="investigate" fromPath={fromPath} topic={topic} />
           <Journey stage={stage} />
           <CometGuide {...cometState} />
           <Panel number="1" title="Design your investigation">
@@ -170,6 +173,7 @@ export default function InvestigatePath() {
               {saved && <Link className="button button--secondary button--lg" to="/my-lab-notebook">View My Lab Notebook</Link>}
             </Panel>
           </>}
+          <NextAdventure currentPath="investigate" saved={saved} topic={topic} />
         </div>
       </main>
     </Layout>

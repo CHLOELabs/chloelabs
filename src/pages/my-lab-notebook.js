@@ -2,6 +2,7 @@ import {useEffect, useMemo, useRef, useState} from 'react';
 import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
 import Link from '@docusaurus/Link';
+import {TopicProgress} from '../components/CuriosityJourney';
 import {
   deleteNotebookEntry,
   exportNotebookBackup,
@@ -58,6 +59,16 @@ export default function MyLabNotebook() {
       ),
     [entries],
   );
+  const topicGroups = useMemo(() => {
+    const groups = new Map();
+    visibleEntries.forEach((entry) => {
+      const topic = entry.topic || 'Untitled curiosity';
+      const key = topic.trim().toLocaleLowerCase();
+      if (!groups.has(key)) groups.set(key, {topic, entries: []});
+      groups.get(key).entries.push(entry);
+    });
+    return [...groups.values()];
+  }, [visibleEntries]);
 
   function removeEntry(entry) {
     const title = getTitle(entry);
@@ -191,23 +202,47 @@ export default function MyLabNotebook() {
               </div>
 
               {visibleEntries.length ? (
-                <div className={styles.grid}>
-                  {visibleEntries.map((entry) => (
-                    <NotebookCard
-                      entry={entry}
-                      expanded={expandedId === entry.notebookId}
-                      key={`${entry.notebookPath}-${entry.notebookId}`}
-                      onDelete={() => removeEntry(entry)}
-                      onExport={() => exportEntry(entry)}
-                      onRename={() => renameEntry(entry)}
-                      onToggle={() =>
-                        setExpandedId((current) =>
-                          current === entry.notebookId
-                            ? ''
-                            : entry.notebookId,
-                        )
-                      }
-                    />
+                <div className={styles.topicGroups}>
+                  {topicGroups.map((group) => (
+                    <section className={styles.topicGroup} key={group.topic}>
+                      <div className={styles.topicGroupHeading}>
+                        <div>
+                          <span>Curiosity collection</span>
+                          <Heading as="h2">{group.topic}</Heading>
+                        </div>
+                        <Link
+                          to={`/curiosity-engine?topic=${encodeURIComponent(group.topic)}`}>
+                          Continue this curiosity →
+                        </Link>
+                      </div>
+                      <TopicProgress
+                        completedPaths={
+                          new Set(
+                            group.entries.map((entry) => entry.notebookPath),
+                          )
+                        }
+                        topic={group.topic}
+                      />
+                      <div className={styles.grid}>
+                        {group.entries.map((entry) => (
+                          <NotebookCard
+                            entry={entry}
+                            expanded={expandedId === entry.notebookId}
+                            key={`${entry.notebookPath}-${entry.notebookId}`}
+                            onDelete={() => removeEntry(entry)}
+                            onExport={() => exportEntry(entry)}
+                            onRename={() => renameEntry(entry)}
+                            onToggle={() =>
+                              setExpandedId((current) =>
+                                current === entry.notebookId
+                                  ? ''
+                                  : entry.notebookId,
+                              )
+                            }
+                          />
+                        ))}
+                      </div>
+                    </section>
                   ))}
                 </div>
               ) : (
