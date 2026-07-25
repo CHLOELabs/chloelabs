@@ -26,8 +26,16 @@ const typeOptions = [
   ['simple tool', 'Tool', 'Make something useful'],
   ['help me choose', 'Surprise me', 'Let ChloeLabs mix the possibilities'],
 ];
-const timeOptions = ['30 minutes', 'a few hours', 'several days'];
-const levelOptions = ['starter', 'growing', 'challenge'];
+const timeOptions = [
+  ['30 minutes', '⚡', 'Quick build', 'One small idea you can test today'],
+  ['a few hours', '🛠️', 'Maker session', 'More parts, testing, and room to improve'],
+  ['several days', '🚀', 'Big mission', 'A deeper build you can return to'],
+];
+const levelOptions = [
+  ['starter', '🌱', 'Starter', 'Clear steps and friendly hints'],
+  ['growing', '🌿', 'Growing', 'More choices for you to make'],
+  ['challenge', '🌳', 'Challenge', 'Fewer hints and trickier design problems'],
+];
 const toolOptions = [
   'craft materials',
   'computer',
@@ -68,6 +76,7 @@ export default function BuildPath() {
   const [testNotes, setTestNotes] = useState('');
   const [improvement, setImprovement] = useState('');
   const [saved, setSaved] = useState(false);
+  const [ideasNeedRefresh, setIdeasNeedRefresh] = useState(false);
   const draftSnapshot = useMemo(
     () => ({
       buildType,
@@ -146,11 +155,32 @@ export default function BuildPath() {
               : 1;
 
   function toggleTool(tool) {
+    markIdeasForRefresh();
     setTools((current) =>
       current.includes(tool)
         ? current.filter((item) => item !== tool)
         : [...current, tool],
     );
+  }
+
+  function markIdeasForRefresh() {
+    if (ideas.length > 0) setIdeasNeedRefresh(true);
+    setSaved(false);
+  }
+
+  function chooseBuildType(value) {
+    markIdeasForRefresh();
+    setBuildType(value);
+  }
+
+  function chooseTime(value) {
+    markIdeasForRefresh();
+    setTime(value);
+  }
+
+  function chooseDifficulty(value) {
+    markIdeasForRefresh();
+    setDifficulty(value);
   }
 
   async function generateIdeas() {
@@ -178,6 +208,7 @@ export default function BuildPath() {
         throw new Error(result.error || 'Could not create build ideas.');
       }
       setIdeas(result.ideas);
+      setIdeasNeedRefresh(false);
       setStatus('ready');
     } catch (requestError) {
       setError(requestError.message);
@@ -192,6 +223,7 @@ export default function BuildPath() {
     setTestNotes('');
     setImprovement('');
     setSaved(false);
+    setIdeasNeedRefresh(false);
   }
 
   function toggleStep(index) {
@@ -283,7 +315,7 @@ export default function BuildPath() {
                     <ChoiceButton
                       key={value}
                       selected={buildType === value}
-                      onClick={() => setBuildType(value)}
+                      onClick={() => chooseBuildType(value)}
                       title={label}
                       description={description}
                     />
@@ -291,28 +323,41 @@ export default function BuildPath() {
                 </div>
               </Fieldset>
 
-              <div className={styles.twoColumns}>
+              <BuildMissionPreview
+                buildType={typeOptions.find(([value]) => value === buildType)}
+                difficulty={levelOptions.find(([value]) => value === difficulty)}
+                time={timeOptions.find(([value]) => value === time)}
+                tools={tools}
+              />
+
+              <div className={styles.setupSections}>
                 <Fieldset legend="How much time do you have?">
-                  <div className={styles.chipRow}>
-                    {timeOptions.map((option) => (
-                      <Chip
-                        key={option}
-                        selected={time === option}
-                        onClick={() => setTime(option)}>
-                        {option}
-                      </Chip>
+                  <p className={styles.fieldHint}>Pick a mission size. Your build ideas will change to fit.</p>
+                  <div className={styles.optionGrid}>
+                    {timeOptions.map(([value, icon, label, description]) => (
+                      <VisualOption
+                        key={value}
+                        selected={time === value}
+                        onClick={() => chooseTime(value)}
+                        icon={icon}
+                        title={label}
+                        description={description}
+                      />
                     ))}
                   </div>
                 </Fieldset>
                 <Fieldset legend="Choose your challenge">
-                  <div className={styles.chipRow}>
-                    {levelOptions.map((option) => (
-                      <Chip
-                        key={option}
-                        selected={difficulty === option}
-                        onClick={() => setDifficulty(option)}>
-                        {option}
-                      </Chip>
+                  <p className={styles.fieldHint}>This changes how much guidance your blueprint includes.</p>
+                  <div className={styles.optionGrid}>
+                    {levelOptions.map(([value, icon, label, description]) => (
+                      <VisualOption
+                        key={value}
+                        selected={difficulty === value}
+                        onClick={() => chooseDifficulty(value)}
+                        icon={icon}
+                        title={label}
+                        description={description}
+                      />
                     ))}
                   </div>
                 </Fieldset>
@@ -338,8 +383,16 @@ export default function BuildPath() {
                 onClick={generateIdeas}>
                 {status === 'loading'
                   ? 'Sketching ideas…'
-                  : 'Create three build ideas'}
+                  : ideasNeedRefresh
+                    ? 'Refresh ideas with my new choices'
+                    : 'Create three build ideas'}
               </button>
+              {ideasNeedRefresh && (
+                <p className={styles.refreshNotice} role="status">
+                  <span>↻</span>
+                  Your mission changed. Refresh to get ideas that match your new choices.
+                </p>
+              )}
               {status === 'loading' && (
                 <p className={styles.loading} role="status">
                   <span /> Turning your constraints into realistic builds…
@@ -568,6 +621,59 @@ function ChoiceButton({selected, onClick, title, description}) {
       <strong>{title}</strong>
       <span>{description}</span>
     </button>
+  );
+}
+
+function VisualOption({selected, onClick, icon, title, description}) {
+  return (
+    <button
+      className={`${styles.visualOption} ${selected ? styles.visualOptionSelected : ''}`}
+      type="button"
+      onClick={onClick}
+      aria-pressed={selected}>
+      <span className={styles.optionIcon} aria-hidden="true">{icon}</span>
+      <span>
+        <strong>{title}</strong>
+        <small>{description}</small>
+      </span>
+      <span className={styles.optionCheck} aria-hidden="true">
+        {selected ? '✓' : '○'}
+      </span>
+    </button>
+  );
+}
+
+function BuildMissionPreview({buildType, difficulty, time, tools}) {
+  const timeFill = time?.[0] === '30 minutes' ? '33%' : time?.[0] === 'a few hours' ? '66%' : '100%';
+  const challengeFill = difficulty?.[0] === 'starter' ? '33%' : difficulty?.[0] === 'growing' ? '66%' : '100%';
+  const buildLabel =
+    buildType?.[0] === 'help me choose'
+      ? 'Try a surprise-me build'
+      : `Make a ${buildType?.[1].toLowerCase()}`;
+  const toolLabel =
+    tools.length === 0
+      ? 'tools you choose'
+      : `${tools.length} ${tools.length === 1 ? 'tool' : 'tools'}`;
+  return (
+    <section className={styles.missionPreview} aria-live="polite">
+      <div className={styles.missionScene} aria-hidden="true">
+        <span className={styles.missionSpark}>✦</span>
+        <span className={styles.missionRobot}>🤖</span>
+        <span className={styles.missionBench}>▰</span>
+        <span className={styles.missionTool}>🔧</span>
+      </div>
+      <div className={styles.missionCopy}>
+        <span className={styles.missionEyebrow}>Your build mission</span>
+        <strong>{time?.[2]} · {difficulty?.[2]}</strong>
+        <p>
+          <b>{buildLabel}</b> about this topic using <b>{toolLabel}</b>.
+        </p>
+        <div className={styles.missionMeters}>
+          <span><i style={{'--fill': timeFill}} />Time</span>
+          <span><i style={{'--fill': challengeFill}} />Challenge</span>
+        </div>
+      </div>
+    </section>
   );
 }
 
