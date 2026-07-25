@@ -50,6 +50,16 @@
   padding-top: 2.5rem;
 }
 
+.aiNotice {
+  background: #fff7e9;
+  border-left: 4px solid #f28c28;
+  border-radius: 0.6rem;
+  display: grid;
+  gap: 0.25rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.2rem;
+}
+
 .step {
   background: var(--ifm-background-color);
   border: 1px solid var(--ifm-color-emphasis-200);
@@ -144,6 +154,10 @@
   margin-top: 1rem;
 }
 
+.exploreButton {
+  margin-top: 1rem;
+}
+
 .activeQuestion {
   color: var(--ifm-color-primary-darkest);
   font-size: 1.15rem;
@@ -176,10 +190,64 @@
   margin: 0;
 }
 
-.prototypeNote {
-  font-size: 0.88rem;
+.privacyNote {
+  font-size: 0.84rem;
+  margin: 0.5rem 0 0;
+  opacity: 0.68;
+}
+
+.sources {
+  border-top: 1px solid var(--ifm-color-emphasis-300);
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+}
+
+.sources h3 {
+  font-size: 1rem;
+}
+
+.sources ul {
+  margin-bottom: 0;
+}
+
+.uncertainty,
+.nextQuestion {
+  background: var(--ifm-color-emphasis-100);
+  border-radius: 0.65rem;
   margin: 1rem 0 0;
-  opacity: 0.7;
+  padding: 0.85rem 1rem;
+}
+
+.statusMessage {
+  align-items: center;
+  background: var(--ifm-color-primary-lightest);
+  border-radius: 0.7rem;
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  padding: 1rem;
+}
+
+.spinner {
+  animation: spin 900ms linear infinite;
+  border: 3px solid var(--ifm-color-emphasis-300);
+  border-radius: 50%;
+  border-top-color: var(--ifm-color-primary);
+  flex: 0 0 auto;
+  height: 1.25rem;
+  width: 1.25rem;
+}
+
+.errorMessage {
+  background: #fff0f0;
+  border-left: 4px solid #c33;
+  border-radius: 0.6rem;
+  margin-top: 1rem;
+  padding: 1rem;
+}
+
+.errorMessage p {
+  margin-bottom: 0.75rem;
 }
 
 .answerList {
@@ -235,6 +303,12 @@
   gap: 0.2rem;
   margin-top: 1rem;
   padding: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media screen and (max-width: 700px) {

@@ -1,61 +1,14 @@
-import {useMemo, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
 import Link from '@docusaurus/Link';
 import {useLocation} from '@docusaurus/router';
 import styles from './learn.module.css';
 
+const LEARN_API_URL =
+  'https://chloelabs-learn-api.chloelabs-amanda.workers.dev';
 const DEFAULT_TOPIC = 'something interesting';
-
-const owlQuestions = [
-  'How can owls see and hunt at night?',
-  'Why can owls fly so quietly?',
-  'Do all owls live and hunt in the same way?',
-];
-
-function buildQuestions(topic) {
-  if (topic.toLowerCase().includes('owl')) return owlQuestions;
-
-  return [
-    `What makes ${topic} interesting or unusual?`,
-    `How does ${topic} work?`,
-    `How does ${topic} affect the world around us?`,
-  ];
-}
-
-function buildDiscovery(topic, question) {
-  if (topic.toLowerCase().includes('owl') && question.toLowerCase().includes('quiet')) {
-    return [
-      {
-        label: 'Big idea',
-        text: 'Special feather shapes soften the sound made as air moves over an owl’s wings.',
-      },
-      {
-        label: 'Surprising fact',
-        text: 'Quiet flight helps an owl hear its prey while the owl itself is moving.',
-      },
-      {
-        label: 'Look more closely',
-        text: 'Compare the soft, fringed edge of an owl feather with the smoother edge of another bird’s feather.',
-      },
-    ];
-  }
-
-  return [
-    {
-      label: 'Big idea',
-      text: `A strong way to learn about ${topic} is to look for the structures, systems, or patterns that make it work.`,
-    },
-    {
-      label: 'Surprising fact',
-      text: `The most memorable discoveries about ${topic} often begin when something does not behave the way we expect.`,
-    },
-    {
-      label: 'Look more closely',
-      text: `Find one reliable book, museum, university, or science source about ${topic}, then write down one detail you can verify.`,
-    },
-  ];
-}
+const AGE_BAND = '10-12';
 
 export default function LearnPath() {
   const location = useLocation();
@@ -63,26 +16,89 @@ export default function LearnPath() {
     const value = new URLSearchParams(location.search).get('topic');
     return value?.trim() || DEFAULT_TOPIC;
   }, [location.search]);
-  const questions = useMemo(() => buildQuestions(topic), [topic]);
 
   const [priorKnowledge, setPriorKnowledge] = useState('');
+  const [questions, setQuestions] = useState([]);
+  const [questionsStatus, setQuestionsStatus] = useState('loading');
+  const [questionsError, setQuestionsError] = useState('');
   const [selectedQuestion, setSelectedQuestion] = useState('');
   const [customQuestion, setCustomQuestion] = useState('');
-  const [answer, setAnswer] = useState('');
-  const [checkedAnswer, setCheckedAnswer] = useState('');
+  const [discovery, setDiscovery] = useState(null);
+  const [discoveryStatus, setDiscoveryStatus] = useState('idle');
+  const [discoveryError, setDiscoveryError] = useState('');
+  const [answer, setAnswer] = useState(null);
+  const [checkedAnswer, setCheckedAnswer] = useState(false);
   const [explanation, setExplanation] = useState('');
   const [saved, setSaved] = useState(false);
 
   const activeQuestion =
     selectedQuestion === 'custom' ? customQuestion.trim() : selectedQuestion;
-  const discoveryCards = useMemo(
-    () => buildDiscovery(topic, activeQuestion),
-    [topic, activeQuestion],
-  );
 
-  const isOwlQuietFlight =
-    topic.toLowerCase().includes('owl') &&
-    activeQuestion.toLowerCase().includes('quiet');
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadQuestions() {
+      setQuestionsStatus('loading');
+      setQuestionsError('');
+
+      try {
+        const result = await requestLearnApi(
+          '/api/learn/questions',
+          {topic, ageBand: AGE_BAND},
+          controller.signal,
+        );
+        setQuestions(result.questions);
+        setQuestionsStatus('ready');
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+        setQuestionsError(error.message);
+        setQuestionsStatus('error');
+      }
+    }
+
+    loadQuestions();
+    return () => controller.abort();
+  }, [topic]);
+
+  function chooseQuestion(question) {
+    setSelectedQuestion(question);
+    resetDiscovery();
+  }
+
+  async function exploreQuestion() {
+    if (!activeQuestion) return;
+
+    setDiscoveryStatus('loading');
+    setDiscoveryError('');
+    setDiscovery(null);
+    setAnswer(null);
+    setCheckedAnswer(false);
+    setExplanation('');
+    setSaved(false);
+
+    try {
+      const result = await requestLearnApi('/api/learn/discover', {
+        topic,
+        question: activeQuestion,
+        ageBand: AGE_BAND,
+      });
+      setDiscovery(result);
+      setDiscoveryStatus('ready');
+    } catch (error) {
+      setDiscoveryError(error.message);
+      setDiscoveryStatus('error');
+    }
+  }
+
+  function resetDiscovery() {
+    setDiscovery(null);
+    setDiscoveryStatus('idle');
+    setDiscoveryError('');
+    setAnswer(null);
+    setCheckedAnswer(false);
+    setExplanation('');
+    setSaved(false);
+  }
 
   function saveReflection() {
     if (!explanation.trim()) return;
@@ -96,21 +112,38 @@ export default function LearnPath() {
       <main className={styles.page}>
         <header className={styles.hero}>
           <div className="container">
-            <Link className={styles.backLink} to={`/curiosity-engine?topic=${encodeURIComponent(topic)}`}>
+            <Link
+              className={styles.backLink}
+              to={`/curiosity-engine?topic=${encodeURIComponent(topic)}`}>
               ← Choose another path
             </Link>
             <span className={styles.eyebrow}>Learn path</span>
             <Heading as="h1">Learn about {topic}</Heading>
-            <p>Let’s turn a big curiosity into one question you can explain in your own words.</p>
+            <p>
+              Let’s turn a big curiosity into one question you can explain in
+              your own words.
+            </p>
           </div>
         </header>
 
         <div className={`container ${styles.content}`}>
+          <aside className={styles.aiNotice}>
+            <strong>AI-guided, human-powered</strong>
+            <span>
+              ChloeLabs researches and organizes information. You decide what
+              it means and explain it yourself. Check the sources before
+              trusting an important claim.
+            </span>
+          </aside>
+
           <section className={styles.step}>
             <span className={styles.stepNumber}>1</span>
             <div>
               <Heading as="h2">What do you already know?</Heading>
-              <p>Write what you know—or what you think might be true. It is okay to be unsure.</p>
+              <p>
+                Write what you know—or what you think might be true. It is okay
+                to be unsure.
+              </p>
               <label className={styles.label} htmlFor="prior-knowledge">
                 My starting ideas
               </label>
@@ -122,6 +155,9 @@ export default function LearnPath() {
                 placeholder={`I already know that ${topic}…`}
                 rows={4}
               />
+              <p className={styles.privacyNote}>
+                This writing stays in your browser and is not sent to the AI.
+              </p>
             </div>
           </section>
 
@@ -130,48 +166,100 @@ export default function LearnPath() {
             <div>
               <Heading as="h2">Choose a learning question</Heading>
               <p>A focused question is easier to explore than a giant topic.</p>
-              <div className={styles.questionGrid}>
-                {questions.map((question) => (
+
+              {questionsStatus === 'loading' && (
+                <StatusMessage>Creating three directions for you…</StatusMessage>
+              )}
+
+              {questionsStatus === 'error' && (
+                <ErrorMessage
+                  message={questionsError}
+                  actionLabel="Try generating questions again"
+                  onRetry={() => window.location.reload()}
+                />
+              )}
+
+              {questionsStatus === 'ready' && (
+                <div className={styles.questionGrid}>
+                  {questions.map((question) => (
+                    <button
+                      className={`${styles.questionCard} ${
+                        selectedQuestion === question ? styles.selected : ''
+                      }`}
+                      key={question}
+                      type="button"
+                      onClick={() => chooseQuestion(question)}
+                      aria-pressed={selectedQuestion === question}>
+                      {question}
+                    </button>
+                  ))}
                   <button
-                    className={`${styles.questionCard} ${selectedQuestion === question ? styles.selected : ''}`}
-                    key={question}
+                    className={`${styles.questionCard} ${
+                      selectedQuestion === 'custom' ? styles.selected : ''
+                    }`}
                     type="button"
-                    onClick={() => {
-                      setSelectedQuestion(question);
-                      setSaved(false);
-                    }}
-                    aria-pressed={selectedQuestion === question}>
-                    {question}
+                    onClick={() => chooseQuestion('custom')}
+                    aria-pressed={selectedQuestion === 'custom'}>
+                    Write my own question
                   </button>
-                ))}
-                <button
-                  className={`${styles.questionCard} ${selectedQuestion === 'custom' ? styles.selected : ''}`}
-                  type="button"
-                  onClick={() => {
-                    setSelectedQuestion('custom');
-                    setSaved(false);
-                  }}
-                  aria-pressed={selectedQuestion === 'custom'}>
-                  Write my own question
-                </button>
-              </div>
+                </div>
+              )}
 
               {selectedQuestion === 'custom' && (
                 <div className={styles.customQuestion}>
-                  <label className={styles.label} htmlFor="custom-question">My question</label>
+                  <label className={styles.label} htmlFor="custom-question">
+                    My question
+                  </label>
                   <input
                     id="custom-question"
                     className={styles.input}
                     value={customQuestion}
-                    onChange={(event) => setCustomQuestion(event.target.value)}
+                    maxLength={240}
+                    onChange={(event) => {
+                      setCustomQuestion(event.target.value);
+                      resetDiscovery();
+                    }}
                     placeholder={`What do you wonder about ${topic}?`}
                   />
                 </div>
               )}
+
+              {activeQuestion && (
+                <button
+                  className={`button button--primary button--lg ${styles.exploreButton}`}
+                  type="button"
+                  disabled={discoveryStatus === 'loading'}
+                  onClick={exploreQuestion}>
+                  {discoveryStatus === 'loading'
+                    ? 'Researching…'
+                    : 'Explore this question'}
+                </button>
+              )}
+
+              {discoveryStatus === 'error' && (
+                <ErrorMessage
+                  message={discoveryError}
+                  actionLabel="Try this question again"
+                  onRetry={exploreQuestion}
+                />
+              )}
             </div>
           </section>
 
-          {activeQuestion && (
+          {discoveryStatus === 'loading' && (
+            <section className={styles.step} aria-live="polite">
+              <span className={styles.stepNumber}>3</span>
+              <div>
+                <Heading as="h2">Researching your question</Heading>
+                <StatusMessage>
+                  Looking for reliable sources and building your discovery
+                  cards…
+                </StatusMessage>
+              </div>
+            </section>
+          )}
+
+          {discovery && (
             <>
               <section className={styles.step} aria-live="polite">
                 <span className={styles.stepNumber}>3</span>
@@ -179,19 +267,42 @@ export default function LearnPath() {
                   <Heading as="h2">Discover</Heading>
                   <p className={styles.activeQuestion}>{activeQuestion}</p>
                   <div className={styles.discoveryGrid}>
-                    {discoveryCards.map((card) => (
-                      <article className={styles.discoveryCard} key={card.label}>
-                        <span>{card.label}</span>
-                        <p>{card.text}</p>
-                      </article>
-                    ))}
+                    <DiscoveryCard
+                      label="Big idea"
+                      text={discovery.bigIdea}
+                    />
+                    <DiscoveryCard
+                      label="Surprising fact"
+                      text={discovery.surprisingFact}
+                    />
+                    <DiscoveryCard
+                      label="Look more closely"
+                      text={discovery.lookMoreClosely}
+                    />
                   </div>
-                  {!isOwlQuietFlight && (
-                    <p className={styles.prototypeNote}>
-                      This prototype demonstrates the learning flow. Topic-specific,
-                      cited discoveries will be added with the research service.
+
+                  {discovery.uncertaintyNote && (
+                    <p className={styles.uncertainty}>
+                      <strong>What remains uncertain:</strong>{' '}
+                      {discovery.uncertaintyNote}
                     </p>
                   )}
+
+                  <div className={styles.sources}>
+                    <Heading as="h3">Sources to check</Heading>
+                    <ul>
+                      {discovery.sources.map((source) => (
+                        <li key={source.url}>
+                          <a
+                            href={source.url}
+                            target="_blank"
+                            rel="noopener noreferrer">
+                            {source.title}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </section>
 
@@ -199,40 +310,44 @@ export default function LearnPath() {
                 <span className={styles.stepNumber}>4</span>
                 <div>
                   <Heading as="h2">Check your understanding</Heading>
-                  <p>Which choice best describes useful scientific learning?</p>
+                  <p>{discovery.comprehensionCheck.question}</p>
                   <div className={styles.answerList}>
-                    {[
-                      'Remembering every sentence exactly',
-                      'Using evidence to explain an idea',
-                      'Choosing the longest answer',
-                    ].map((choice) => (
-                      <label className={styles.answerChoice} key={choice}>
-                        <input
-                          type="radio"
-                          name="understanding"
-                          value={choice}
-                          checked={answer === choice}
-                          onChange={(event) => {
-                            setAnswer(event.target.value);
-                            setCheckedAnswer('');
-                          }}
-                        />
-                        <span>{choice}</span>
-                      </label>
-                    ))}
+                    {discovery.comprehensionCheck.choices.map(
+                      (choice, index) => (
+                        <label className={styles.answerChoice} key={choice}>
+                          <input
+                            type="radio"
+                            name="understanding"
+                            value={index}
+                            checked={answer === index}
+                            onChange={() => {
+                              setAnswer(index);
+                              setCheckedAnswer(false);
+                            }}
+                          />
+                          <span>{choice}</span>
+                        </label>
+                      ),
+                    )}
                   </div>
                   <button
                     className="button button--secondary"
                     type="button"
-                    disabled={!answer}
-                    onClick={() => setCheckedAnswer(answer)}>
+                    disabled={answer === null}
+                    onClick={() => setCheckedAnswer(true)}>
                     Check my answer
                   </button>
                   {checkedAnswer && (
-                    <p className={checkedAnswer === 'Using evidence to explain an idea' ? styles.correct : styles.tryAgain}>
-                      {checkedAnswer === 'Using evidence to explain an idea'
-                        ? 'Exactly. Evidence helps you support and communicate what you learned.'
-                        : 'Try again. Think about how scientists support an explanation.'}
+                    <p
+                      className={
+                        answer ===
+                        discovery.comprehensionCheck.correctChoice
+                          ? styles.correct
+                          : styles.tryAgain
+                      }>
+                      {answer === discovery.comprehensionCheck.correctChoice
+                        ? discovery.comprehensionCheck.feedback
+                        : 'Try again. Look for the choice best supported by the discovery cards and sources.'}
                     </p>
                   )}
                 </div>
@@ -243,7 +358,9 @@ export default function LearnPath() {
                 <div>
                   <Heading as="h2">Explain it in your own words</Heading>
                   <p>Imagine Comet asked you about this. What would you say?</p>
-                  <label className={styles.label} htmlFor="explanation">My explanation</label>
+                  <label className={styles.label} htmlFor="explanation">
+                    My explanation
+                  </label>
                   <textarea
                     id="explanation"
                     className={styles.textarea}
@@ -255,6 +372,10 @@ export default function LearnPath() {
                     placeholder="I would explain it like this…"
                     rows={5}
                   />
+                  <p className={styles.nextQuestion}>
+                    <strong>A possible next question:</strong>{' '}
+                    {discovery.nextQuestion}
+                  </p>
                   <div className={styles.actions}>
                     <button
                       className="button button--primary button--lg"
@@ -263,7 +384,9 @@ export default function LearnPath() {
                       onClick={saveReflection}>
                       Save to my Lab Notebook
                     </button>
-                    <Link className="button button--outline button--secondary button--lg" to="/curiosity-engine">
+                    <Link
+                      className="button button--outline button--secondary button--lg"
+                      to="/curiosity-engine">
                       Explore another question
                     </Link>
                   </div>
@@ -271,8 +394,8 @@ export default function LearnPath() {
                     <div className={styles.savedMessage} role="status">
                       <strong>Reflection ready!</strong>
                       <span>
-                        This prototype keeps it on this page. Persistent Lab Notebook
-                        saving is the next product step.
+                        This prototype keeps it on this page. Persistent Lab
+                        Notebook saving is the next product step.
                       </span>
                     </div>
                   )}
@@ -284,4 +407,56 @@ export default function LearnPath() {
       </main>
     </Layout>
   );
+}
+
+function DiscoveryCard({label, text}) {
+  return (
+    <article className={styles.discoveryCard}>
+      <span>{label}</span>
+      <p>{text}</p>
+    </article>
+  );
+}
+
+function StatusMessage({children}) {
+  return (
+    <div className={styles.statusMessage} role="status">
+      <span className={styles.spinner} aria-hidden="true" />
+      <span>{children}</span>
+    </div>
+  );
+}
+
+function ErrorMessage({message, actionLabel, onRetry}) {
+  return (
+    <div className={styles.errorMessage} role="alert">
+      <p>{message}</p>
+      <button
+        className="button button--outline button--secondary"
+        type="button"
+        onClick={onRetry}>
+        {actionLabel}
+      </button>
+    </div>
+  );
+}
+
+async function requestLearnApi(path, payload, signal) {
+  const response = await fetch(`${LEARN_API_URL}${path}`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload),
+    signal,
+  });
+
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(
+      result.error ||
+        'ChloeLabs could not reach the learning service. Please try again.',
+    );
+  }
+
+  return result;
 }
