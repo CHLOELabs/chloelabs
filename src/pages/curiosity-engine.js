@@ -43,6 +43,7 @@ export default function CuriosityEngine() {
   const location = useLocation();
   const learnUrl = useBaseUrl('/curiosity-engine/learn');
   const buildUrl = useBaseUrl('/curiosity-engine/build');
+  const investigateUrl = useBaseUrl('/curiosity-engine/investigate');
   const initialTopic = useMemo(() => {
     const value = new URLSearchParams(location.search).get('topic');
     return value?.trim() || '';
@@ -87,6 +88,11 @@ export default function CuriosityEngine() {
 
     if (path.key === 'build') {
       history.push(`${buildUrl}?topic=${encodeURIComponent(topic)}`);
+      return;
+    }
+
+    if (path.key === 'investigate') {
+      history.push(`${investigateUrl}?topic=${encodeURIComponent(topic)}`);
       return;
     }
 

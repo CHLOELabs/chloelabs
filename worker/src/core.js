@@ -18,6 +18,26 @@ const BUILD_TOOLS = new Set([
   'building materials',
   'household materials',
 ]);
+const INVESTIGATION_TYPES = new Set([
+  'observe',
+  'compare',
+  'measure',
+  'use data',
+  'test an idea',
+  'help me choose',
+]);
+const INVESTIGATION_TIMES = new Set([
+  '30 minutes',
+  'one day',
+  'several days',
+  'several weeks',
+]);
+const INVESTIGATION_SETTINGS = new Set([
+  'indoors',
+  'outdoors',
+  'online public data',
+  'school or community',
+]);
 
 export class RequestError extends Error {
   constructor(message, status = 400) {
@@ -70,6 +90,25 @@ export function validateBuildRequest(payload) {
     : [];
 
   return {topic, ageBand, buildType, time, difficulty, tools};
+}
+
+export function validateInvestigationRequest(payload) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw new RequestError('Please send a valid investigation request.');
+  }
+  return {
+    topic: cleanText(payload.topic, TOPIC_MAX_LENGTH, 'topic'),
+    ageBand: AGE_BANDS.has(payload.ageBand) ? payload.ageBand : '10-12',
+    investigationType: INVESTIGATION_TYPES.has(payload.investigationType)
+      ? payload.investigationType
+      : 'help me choose',
+    time: INVESTIGATION_TIMES.has(payload.time)
+      ? payload.time
+      : 'one day',
+    setting: INVESTIGATION_SETTINGS.has(payload.setting)
+      ? payload.setting
+      : 'indoors',
+  };
 }
 
 export function extractStructuredOutput(response) {

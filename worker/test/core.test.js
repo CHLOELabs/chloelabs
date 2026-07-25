@@ -5,6 +5,7 @@ import {
   corsHeaders,
   extractStructuredOutput,
   validateBuildRequest,
+  validateInvestigationRequest,
   validateLearnRequest,
 } from '../src/core.js';
 
@@ -60,6 +61,24 @@ test('validates and limits a build request', () => {
       time: 'a few hours',
       difficulty: 'growing',
       tools: ['craft materials', 'computer'],
+    },
+  );
+});
+
+test('validates an investigation request', () => {
+  assert.deepEqual(
+    validateInvestigationRequest({
+      topic: ' birds ',
+      investigationType: 'observe',
+      time: 'several days',
+      setting: 'outdoors',
+    }),
+    {
+      topic: 'birds',
+      ageBand: '10-12',
+      investigationType: 'observe',
+      time: 'several days',
+      setting: 'outdoors',
     },
   );
 });
