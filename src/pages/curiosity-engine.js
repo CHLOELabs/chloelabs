@@ -3,6 +3,10 @@ import {useHistory, useLocation} from '@docusaurus/router';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
+import {
+  ensureProjectForTopic,
+  projectLink,
+} from '../lib/projectStorage';
 import styles from './curiosity-engine.module.css';
 
 const paths = [
@@ -52,6 +56,7 @@ export default function CuriosityEngine() {
   }, [location.search]);
   const [curiosity, setCuriosity] = useState(initialTopic);
   const [topic, setTopic] = useState(initialTopic);
+  const [project, setProject] = useState(null);
   const [selectedPath, setSelectedPath] = useState(null);
   const [revealRequest, setRevealRequest] = useState(0);
   const resultsHeadingRef = useRef(null);
@@ -73,38 +78,46 @@ export default function CuriosityEngine() {
     return () => window.cancelAnimationFrame(frame);
   }, [revealRequest]);
 
+  useEffect(() => {
+    if (!initialTopic) return;
+    setProject(ensureProjectForTopic(initialTopic));
+  }, [initialTopic]);
+
   function explore(event) {
     event.preventDefault();
     const nextTopic = curiosity.trim();
     if (!nextTopic) return;
     setTopic(nextTopic);
+    setProject(ensureProjectForTopic(nextTopic));
     setSelectedPath(null);
     setRevealRequest((request) => request + 1);
   }
 
   function choosePath(path) {
+    const activeProject = project || ensureProjectForTopic(topic);
+    const query = `?topic=${encodeURIComponent(topic)}&project=${encodeURIComponent(activeProject.id)}`;
     if (path.key === 'learn') {
-      history.push(`${learnUrl}?topic=${encodeURIComponent(topic)}`);
+      history.push(`${learnUrl}${query}`);
       return;
     }
 
     if (path.key === 'build') {
-      history.push(`${buildUrl}?topic=${encodeURIComponent(topic)}`);
+      history.push(`${buildUrl}${query}`);
       return;
     }
 
     if (path.key === 'investigate') {
-      history.push(`${investigateUrl}?topic=${encodeURIComponent(topic)}`);
+      history.push(`${investigateUrl}${query}`);
       return;
     }
 
     if (path.key === 'create') {
-      history.push(`${createUrl}?topic=${encodeURIComponent(topic)}`);
+      history.push(`${createUrl}${query}`);
       return;
     }
 
     if (path.key === 'share') {
-      history.push(`${shareUrl}?topic=${encodeURIComponent(topic)}`);
+      history.push(`${shareUrl}${query}`);
       return;
     }
 
@@ -158,6 +171,24 @@ export default function CuriosityEngine() {
                 Five ways to explore “{topic}”
               </Heading>
               <p>Choose the path that sounds most exciting right now.</p>
+
+              {project && (
+                <div className={styles.projectRibbon}>
+                  <div>
+                    <span>New project workspace</span>
+                    <strong>{project.title}</strong>
+                    <small>
+                      Your five paths now stay connected around this curiosity.
+                    </small>
+                  </div>
+                  <button
+                    className="button button--primary"
+                    onClick={() => history.push(projectLink(project))}
+                    type="button">
+                    Open project workspace
+                  </button>
+                </div>
+              )}
 
               <div className={styles.pathGrid}>
                 {paths.map((path) => (

@@ -8,6 +8,7 @@ import DraftControls from '../../components/DraftControls';
 import {NextAdventure, PathJourneyMap} from '../../components/CuriosityJourney';
 import TrustNotice from '../../components/TrustNotice';
 import {upsertNotebookEntry} from '../../lib/notebookStorage';
+import {ensureProjectForTopic} from '../../lib/projectStorage';
 import {useBrowserDraft} from '../../lib/useBrowserDraft';
 import styles from './creativePaths.module.css';
 
@@ -28,7 +29,7 @@ export default function CreatePath(){
   const completed=drafts.filter((value)=>value?.trim()).length;
   async function generate(){setStatus('loading');setError('');setIdea(null);try{const response=await fetch(`${API}/api/create/ideas`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic,ageBand:'10-12',format,time})});const result=await response.json();if(!response.ok)throw new Error(result.error||'Could not open the idea studio.');setIdeas(result.ideas);setStatus('ready')}catch(e){setError(e.message);setStatus('error')}}
   function choose(next){setIdea(next);setDrafts(next.steps.map(()=>''));setReflection('');setSaved(false)}
-  function save(){if(!idea||!reflection.trim())return;upsertNotebookEntry('chloelabs:create-notebook:v1',{id:draft.projectId,topic,idea,drafts,reflection,savedAt:new Date().toISOString()});setSaved(true)}
+  function save(){if(!idea||!reflection.trim())return;upsertNotebookEntry('chloelabs:create-notebook:v1',{id:draft.projectId,parentProjectId:ensureProjectForTopic(topic).id,topic,idea,drafts,reflection,savedAt:new Date().toISOString()});setSaved(true)}
   function startOver(){if(!window.confirm('Start this creation over? Your notebook entry will stay saved.'))return;draft.clearDraft();setFormat('help me choose');setTime('a few hours');setIdeas([]);setIdea(null);setDrafts([]);setReflection('');setStatus('idle');setError('');setSaved(false)}
   const message=saved?'Your creation is saved! You took an idea through drafting and revision—studio magic complete.':idea?completed?`${completed} of ${idea.steps.length} creative stars are glowing. Keep making choices that feel like yours.`:'The storyboard is ready. I supplied the structure; you supply every original idea.':ideas.length?'Pick the concept that makes your imagination start moving.':'Choose a format and I’ll help you find three ways to transform curiosity into something original.';
   return <Layout title={`Create something about ${topic}`}><main className={`${styles.page} ${styles.createPage}`}>

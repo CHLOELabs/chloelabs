@@ -99,6 +99,11 @@ export function PathJourneyMap({currentPath, fromPath, topic}) {
           );
         })}
       </div>
+      <Link
+        className={styles.workspaceLink}
+        to={`/project-workspace?topic=${encodeURIComponent(topic)}`}>
+        Open this project’s workspace →
+      </Link>
     </section>
   );
 }
@@ -124,7 +129,7 @@ export function NextAdventure({currentPath, saved, topic}) {
       <span className={styles.nextEyebrow}>Your curiosity keeps growing</span>
       <Heading as="h2">What would you like to do next?</Heading>
       <p>
-        You completed the {pathLabel(currentPath)} path for{' '}
+        You saved work from the {pathLabel(currentPath)} path for{' '}
         <strong>{topic}</strong>. Choose another angle or return to your
         notebook.
       </p>
@@ -139,9 +144,16 @@ export function NextAdventure({currentPath, saved, topic}) {
           </Link>
         ))}
       </div>
-      <Link className={styles.notebookLink} to="/my-lab-notebook">
-        Return to My Lab Notebook →
-      </Link>
+      <div className={styles.returnLinks}>
+        <Link
+          className={styles.notebookLink}
+          to={`/project-workspace?topic=${encodeURIComponent(topic)}`}>
+          Return to Project Workspace →
+        </Link>
+        <Link className={styles.notebookLink} to="/my-lab-notebook">
+          Open My Lab Notebook →
+        </Link>
+      </div>
     </section>
   );
 }

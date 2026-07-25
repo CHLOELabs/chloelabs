@@ -210,10 +210,17 @@ export default function MyLabNotebook() {
                           <span>Curiosity collection</span>
                           <Heading as="h2">{group.topic}</Heading>
                         </div>
-                        <Link
-                          to={`/curiosity-engine?topic=${encodeURIComponent(group.topic)}`}>
-                          Continue this curiosity →
-                        </Link>
+                        <div className={styles.topicActions}>
+                          <Link
+                            className="button button--primary button--sm"
+                            to={`/project-workspace?topic=${encodeURIComponent(group.topic)}`}>
+                            Open project workspace
+                          </Link>
+                          <Link
+                            to={`/curiosity-engine?topic=${encodeURIComponent(group.topic)}`}>
+                            Choose another path →
+                          </Link>
+                        </div>
                       </div>
                       <TopicProgress
                         completedPaths={

@@ -10,6 +10,7 @@ import {
 } from '../../components/CuriosityJourney';
 import TrustNotice from '../../components/TrustNotice';
 import {upsertNotebookEntry} from '../../lib/notebookStorage';
+import {ensureProjectForTopic} from '../../lib/projectStorage';
 import {useBrowserDraft} from '../../lib/useBrowserDraft';
 import styles from './build.module.css';
 
@@ -200,6 +201,7 @@ export default function BuildPath() {
     if (!selectedIdea || !testNotes.trim() || !improvement.trim()) return;
     upsertNotebookEntry(NOTEBOOK_KEY, {
           id: draft.projectId,
+          parentProjectId: ensureProjectForTopic(topic).id,
           topic,
           project: selectedIdea,
           completedSteps,

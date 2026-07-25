@@ -120,13 +120,16 @@ export default function ForParents() {
 
           <TrustSection title="Where notebook work is stored">
             <p>
-              Drafts and notebook entries are saved in browser local storage on
-              the device being used. There is currently no ChloeLabs learner
+              Project Workspaces, drafts, and notebook entries are saved in
+              browser local storage on the device being used. Project names,
+              questions, goals, status, and next actions stay in the browser
+              and are not sent to AI. There is currently no ChloeLabs learner
               account or cloud notebook database. Work does not automatically
               follow the learner to another browser or device.
             </p>
             <p>
-              Families can download and import a complete notebook backup from{' '}
+              Families can download and import a complete project-and-notebook
+              backup from{' '}
               <Link to="/my-lab-notebook">My Lab Notebook</Link>. Clearing
               browser data may permanently remove local work unless a backup
               has been downloaded.

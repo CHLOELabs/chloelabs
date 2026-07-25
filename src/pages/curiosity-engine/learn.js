@@ -10,6 +10,7 @@ import {
 } from '../../components/CuriosityJourney';
 import TrustNotice from '../../components/TrustNotice';
 import {upsertNotebookEntry} from '../../lib/notebookStorage';
+import {ensureProjectForTopic} from '../../lib/projectStorage';
 import {useBrowserDraft} from '../../lib/useBrowserDraft';
 import styles from './learn.module.css';
 
@@ -195,6 +196,7 @@ export default function LearnPath() {
     try {
       const entry = {
         id: draft.projectId,
+        parentProjectId: ensureProjectForTopic(topic).id,
         topic,
         question: activeQuestion,
         startingIdeas: priorKnowledge.trim(),

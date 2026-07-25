@@ -98,6 +98,41 @@
   margin-top: 2rem;
 }
 
+.projectRibbon {
+  align-items: center;
+  background: #fff8e8;
+  border: 2px solid #efc27e;
+  border-radius: 1rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin: 1.5rem 0;
+  padding: 1rem 1.2rem;
+  text-align: left;
+}
+
+.projectRibbon div {
+  display: flex;
+  flex-direction: column;
+}
+
+.projectRibbon span {
+  color: #b85f14;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.projectRibbon strong {
+  color: #173f49;
+  font-size: 1.1rem;
+}
+
+.projectRibbon small {
+  color: #60736d;
+}
+
 .pathCard {
   background: white;
   border: 2px solid var(--ifm-color-emphasis-200);
@@ -187,5 +222,10 @@
 
   .pathGrid {
     grid-template-columns: 1fr;
+  }
+
+  .projectRibbon {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

@@ -8,6 +8,7 @@ import DraftControls from '../../components/DraftControls';
 import {NextAdventure, PathJourneyMap} from '../../components/CuriosityJourney';
 import TrustNotice from '../../components/TrustNotice';
 import {upsertNotebookEntry} from '../../lib/notebookStorage';
+import {ensureProjectForTopic} from '../../lib/projectStorage';
 import {useBrowserDraft} from '../../lib/useBrowserDraft';
 import styles from './investigate.module.css';
 
@@ -98,7 +99,7 @@ export default function InvestigatePath() {
 
   function saveInvestigation() {
     if (!claim.trim() || !evidence.trim() || !reasoning.trim()) return;
-    upsertNotebookEntry('chloelabs:investigation-notebook:v1', {id: draft.projectId, topic, idea, prediction, rows, claim, evidence, reasoning, uncertainty, savedAt: new Date().toISOString()});
+    upsertNotebookEntry('chloelabs:investigation-notebook:v1', {id: draft.projectId, parentProjectId: ensureProjectForTopic(topic).id, topic, idea, prediction, rows, claim, evidence, reasoning, uncertainty, savedAt: new Date().toISOString()});
     setSaved(true);
   }
 

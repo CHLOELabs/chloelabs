@@ -1,3 +1,5 @@
+import {PROJECTS_KEY, readProjects} from './projectStorage';
+
 export const NOTEBOOK_VERSION = 1;
 
 export const NOTEBOOK_SOURCES = [
@@ -87,6 +89,7 @@ export function exportNotebookBackup() {
     product: 'ChloeLabs',
     version: NOTEBOOK_VERSION,
     exportedAt: new Date().toISOString(),
+    projects: readProjects(),
     notebooks: Object.fromEntries(
       NOTEBOOK_SOURCES.map((source) => [source.path, readArray(source.key)]),
     ),
@@ -118,6 +121,21 @@ export function importNotebookBackup(backup) {
     );
     imported += additions.length;
   });
+
+  if (Array.isArray(backup.projects)) {
+    const currentProjects = readProjects();
+    const knownProjectIds = new Set(
+      currentProjects.map((project) => String(project.id)),
+    );
+    const projectAdditions = backup.projects.filter(
+      (project) => project && !knownProjectIds.has(String(project.id)),
+    );
+    window.localStorage.setItem(
+      PROJECTS_KEY,
+      JSON.stringify([...currentProjects, ...projectAdditions]),
+    );
+    window.dispatchEvent(new Event('chloelabs:projects-changed'));
+  }
 
   announceNotebookChange();
   return imported;
