@@ -79,6 +79,11 @@ const config = {
             position: 'left',
             label: 'Bytelets',
           },
+          {
+            to: '/my-lab-notebook',
+            label: 'My Lab Notebook',
+            position: 'left',
+          },
           {to: '/blog', label: 'Insights', position: 'left'},
         ],
       },
@@ -91,6 +96,10 @@ const config = {
               {
                 label: 'Bytelets',
                 to: '/docs/intro',
+              },
+              {
+                label: 'My Lab Notebook',
+                to: '/my-lab-notebook',
               },
             ],
           },

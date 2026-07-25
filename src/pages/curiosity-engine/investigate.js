@@ -137,6 +137,7 @@ export default function InvestigatePath() {
               </div>
               <button className="button button--primary button--lg" disabled={!claim.trim() || !evidence.trim() || !reasoning.trim()} onClick={saveInvestigation}>Save to my Investigation Notebook</button>
               {saved && <p className={styles.saved} role="status"><strong>Investigation saved.</strong> Your plan, real evidence, and conclusion are stored in this browser.</p>}
+              {saved && <Link className="button button--secondary button--lg" to="/my-lab-notebook">View My Lab Notebook</Link>}
             </Panel>
           </>}
         </div>

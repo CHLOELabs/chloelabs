@@ -525,14 +525,21 @@ export default function LearnPath() {
                     </Link>
                   </div>
                   {saved && (
-                    <div className={styles.savedMessage} role="status">
-                      <strong>Reflection ready!</strong>
-                      <span>
-                        Your starting ideas and final reflection are saved in
-                        this browser’s Lab Notebook. They are not synced to
-                        other devices.
-                      </span>
-                    </div>
+                    <>
+                      <div className={styles.savedMessage} role="status">
+                        <strong>Reflection ready!</strong>
+                        <span>
+                          Your starting ideas and final reflection are saved in
+                          this browser’s Lab Notebook. They are not synced to
+                          other devices.
+                        </span>
+                      </div>
+                      <Link
+                        className="button button--secondary button--lg"
+                        to="/my-lab-notebook">
+                        View My Lab Notebook
+                      </Link>
+                    </>
                   )}
                 </div>
               </section>

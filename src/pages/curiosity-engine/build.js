@@ -444,6 +444,13 @@ export default function BuildPath() {
                       test, and improvement notes are stored in this browser.
                     </p>
                   )}
+                  {saved && (
+                    <Link
+                      className="button button--secondary button--lg"
+                      to="/my-lab-notebook">
+                      View My Lab Notebook
+                    </Link>
+                  )}
                 </div>
               </section>
             </>
