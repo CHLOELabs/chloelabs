@@ -81,6 +81,16 @@
   max-width: 1100px;
 }
 
+.resultsHeading {
+  scroll-margin-top: 6rem;
+}
+
+.resultsHeading:focus-visible {
+  border-radius: 0.25rem;
+  outline: 3px solid rgba(3, 160, 181, 0.35);
+  outline-offset: 0.35rem;
+}
+
 .pathGrid {
   display: grid;
   gap: 1rem;

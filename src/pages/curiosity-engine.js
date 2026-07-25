@@ -1,4 +1,4 @@
-import {useMemo, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {useHistory, useLocation} from '@docusaurus/router';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import Layout from '@theme/Layout';
@@ -49,6 +49,25 @@ export default function CuriosityEngine() {
   const [curiosity, setCuriosity] = useState(initialTopic);
   const [topic, setTopic] = useState(initialTopic);
   const [selectedPath, setSelectedPath] = useState(null);
+  const [revealRequest, setRevealRequest] = useState(0);
+  const resultsHeadingRef = useRef(null);
+
+  useEffect(() => {
+    if (!revealRequest || !resultsHeadingRef.current) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      const prefersReducedMotion = window.matchMedia(
+        '(prefers-reduced-motion: reduce)',
+      ).matches;
+      resultsHeadingRef.current.scrollIntoView({
+        behavior: prefersReducedMotion ? 'auto' : 'smooth',
+        block: 'start',
+      });
+      resultsHeadingRef.current.focus({preventScroll: true});
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [revealRequest]);
 
   function explore(event) {
     event.preventDefault();
@@ -56,6 +75,7 @@ export default function CuriosityEngine() {
     if (!nextTopic) return;
     setTopic(nextTopic);
     setSelectedPath(null);
+    setRevealRequest((request) => request + 1);
   }
 
   function choosePath(path) {
@@ -106,7 +126,13 @@ export default function CuriosityEngine() {
         {topic && (
           <section className={styles.results} aria-live="polite">
             <div className="container">
-              <Heading as="h2">Five ways to explore “{topic}”</Heading>
+              <Heading
+                as="h2"
+                className={styles.resultsHeading}
+                ref={resultsHeadingRef}
+                tabIndex={-1}>
+                Five ways to explore “{topic}”
+              </Heading>
               <p>Choose the path that sounds most exciting right now.</p>
 
               <div className={styles.pathGrid}>
