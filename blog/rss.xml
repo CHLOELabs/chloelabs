@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
     <channel>
         <title>ChloeLabs Blog</title>
-        <link>https://chloelabs.github.io/chloelabs/blog</link>
+        <link>https://chloelabs.io/blog</link>
         <description>ChloeLabs Blog</description>
         <lastBuildDate>Thu, 23 Jan 2025 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
@@ -10,8 +10,8 @@
         <language>en</language>
         <item>
             <title><![CDATA[Building Big Futures, Byte-by-Byte]]></title>
-            <link>https://chloelabs.github.io/chloelabs/blog/first-blog-post</link>
-            <guid>https://chloelabs.github.io/chloelabs/blog/first-blog-post</guid>
+            <link>https://chloelabs.io/blog/first-blog-post</link>
+            <guid>https://chloelabs.io/blog/first-blog-post</guid>
             <pubDate>Thu, 23 Jan 2025 00:00:00 GMT</pubDate>
             <description><![CDATA[Hello, and welcome to ChloeLabs!]]></description>
             <content:encoded><![CDATA[<p><strong>Hello, and welcome to ChloeLabs!</strong></p>

@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkmy_website=self.webpackChunkmy_website||[]).push([[947],{6600:a=>{a.exports=JSON.parse('{"authors":[{"name":"Amanda Tan","title":"Chief Content Developer, ChloeLabs","url":"https://github.com/amanda-tan","page":{"permalink":"/blog/authors/amandatan"},"socials":{"github":"https://github.com/amanda-tan"},"key":"amandatan","count":1}]}')}}]);

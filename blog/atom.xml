@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?><?xml-stylesheet type="text/xsl" href="atom.xsl"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-    <id>https://chloelabs.github.io/chloelabs/blog</id>
+    <id>https://chloelabs.io/blog</id>
     <title>ChloeLabs Blog</title>
     <updated>2025-01-23T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
-    <link rel="alternate" href="https://chloelabs.github.io/chloelabs/blog"/>
+    <link rel="alternate" href="https://chloelabs.io/blog"/>
     <subtitle>ChloeLabs Blog</subtitle>
-    <icon>https://chloelabs.github.io/chloelabs/img/favicon/favicon.ico</icon>
+    <icon>https://chloelabs.io/img/favicon/favicon.ico</icon>
     <entry>
         <title type="html"><![CDATA[Building Big Futures, Byte-by-Byte]]></title>
-        <id>https://chloelabs.github.io/chloelabs/blog/first-blog-post</id>
-        <link href="https://chloelabs.github.io/chloelabs/blog/first-blog-post"/>
+        <id>https://chloelabs.io/blog/first-blog-post</id>
+        <link href="https://chloelabs.io/blog/first-blog-post"/>
         <updated>2025-01-23T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[Hello, and welcome to ChloeLabs!]]></summary>
         <content type="html"><![CDATA[<p><strong>Hello, and welcome to ChloeLabs!</strong></p>
