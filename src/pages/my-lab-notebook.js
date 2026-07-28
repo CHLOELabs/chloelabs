@@ -9,7 +9,13 @@ import {
   importNotebookBackup,
   renameNotebookEntry,
   readNotebook,
+  upsertNotebookEntry,
 } from '../lib/notebookStorage';
+import {
+  ensureProjectForTopic,
+  readProjects,
+  updateProject,
+} from '../lib/projectStorage';
 import styles from './my-lab-notebook.module.css';
 
 const PATHS = {
@@ -120,18 +126,17 @@ export default function MyLabNotebook() {
         <header className={styles.hero}>
           <div className={`container ${styles.heroInner}`}>
             <div>
-              <span className={styles.eyebrow}>Your curiosity collection</span>
-              <Heading as="h1">The detailed record of your work</Heading>
-              <p>
-                Every saved note, experiment, build, discovery, creation, and
-                sharing plan lives here.
-              </p>
+              <span className={styles.eyebrow}>My Lab Notebook</span>
+              <Heading as="h1">Save what happened.</Heading>
+              <p>Take a photo or record one sentence. That is enough.</p>
             </div>
             <NotebookComet />
           </div>
         </header>
 
         <div className={`container ${styles.content}`}>
+          <QuickCapture onSaved={refresh} />
+
           <aside className={styles.storageNotice}>
             <span aria-hidden="true">🔒</span>
             <div>
@@ -271,6 +276,185 @@ export default function MyLabNotebook() {
   );
 }
 
+function QuickCapture({onSaved}) {
+  const [projects, setProjects] = useState([]);
+  const [projectId, setProjectId] = useState('');
+  const [status, setStatus] = useState('');
+  const [recording, setRecording] = useState(false);
+  const photoInput = useRef(null);
+  const recorderRef = useRef(null);
+  const streamRef = useRef(null);
+  const captureId = useRef('');
+
+  useEffect(() => {
+    const current = readProjects();
+    setProjects(current);
+    setProjectId(current[0]?.id || '');
+    return () => streamRef.current?.getTracks().forEach((track) => track.stop());
+  }, []);
+
+  function currentProject() {
+    return (
+      readProjects().find((project) => project.id === projectId) ||
+      ensureProjectForTopic('My quick experiment')
+    );
+  }
+
+  function saveCapture(payload, artifact) {
+    const project = currentProject();
+    const id =
+      captureId.current ||
+      `capture-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    captureId.current = id;
+    const savedAt = new Date().toISOString();
+    upsertNotebookEntry('chloelabs:build-notebook:v1', {
+      id,
+      parentProjectId: project.id,
+      topic: project.topic,
+      project: {
+        title: 'Quick capture',
+        description: 'A photo or sentence saved while building.',
+      },
+      ...payload,
+      savedAt,
+    });
+    updateProject(project.id, {
+      evidence: [
+        ...(Array.isArray(project.evidence) ? project.evidence : []),
+        {...artifact, id: `${id}-${artifact.type}`, createdAt: savedAt},
+      ],
+    });
+    setProjects(readProjects());
+    setProjectId(project.id);
+    onSaved();
+  }
+
+  async function takePhoto(event) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    try {
+      const photo = await resizeImage(file);
+      saveCapture(
+        {capturePhoto: photo},
+        {type: 'photo', photo, caption: 'Quick project capture'},
+      );
+      setStatus('Photo saved! You can keep building.');
+    } catch {
+      setStatus('That photo could not be saved. Try a smaller image.');
+    }
+  }
+
+  async function toggleRecording() {
+    if (recording) {
+      recorderRef.current?.stop();
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+      setStatus(
+        'Voice recording is not available in this browser. Take a photo instead.',
+      );
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+      const chunks = [];
+      const recorder = new MediaRecorder(stream);
+      streamRef.current = stream;
+      recorderRef.current = recorder;
+      recorder.ondataavailable = (event) => {
+        if (event.data.size) chunks.push(event.data);
+      };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        setRecording(false);
+        const audio = await blobToDataUrl(
+          new Blob(chunks, {type: recorder.mimeType || 'audio/webm'}),
+        );
+        saveCapture(
+          {captureAudio: audio, captureSentence: 'One-sentence voice note'},
+          {type: 'audio', audio, caption: 'One-sentence voice note'},
+        );
+        setStatus('Sentence saved! That is enough for today.');
+      };
+      recorder.start();
+      setRecording(true);
+      setStatus('Recording… say one sentence, then tap Stop.');
+      window.setTimeout(() => {
+        if (recorder.state === 'recording') recorder.stop();
+      }, 20000);
+    } catch {
+      setStatus('Microphone access was not available. Take a photo instead.');
+    }
+  }
+
+  return (
+    <section className={styles.quickCapture}>
+      <div className={styles.captureHeading}>
+        <div>
+          <span>Save it in seconds</span>
+          <Heading as="h2">What happened?</Heading>
+          <p>A photo or one spoken sentence is enough.</p>
+        </div>
+        {projects.length > 0 && (
+          <label>
+            Add to
+            <select
+              value={projectId}
+              onChange={(event) => {
+                setProjectId(event.target.value);
+                captureId.current = '';
+              }}>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.title}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+      </div>
+      <div className={styles.captureActions}>
+        <button
+          className={styles.photoButton}
+          onClick={() => photoInput.current?.click()}
+          type="button">
+          <span aria-hidden="true">📸</span>
+          <strong>Take a Photo</strong>
+          <small>Primary action</small>
+        </button>
+        <button
+          aria-pressed={recording}
+          className={`${styles.voiceButton} ${recording ? styles.recording : ''}`}
+          onClick={toggleRecording}
+          type="button">
+          <span aria-hidden="true">{recording ? '⏹️' : '🎙️'}</span>
+          <strong>
+            {recording ? 'Stop Recording' : 'Record One Sentence'}
+          </strong>
+          <small>
+            {recording ? 'Tap when you are done' : 'Up to 20 seconds'}
+          </small>
+        </button>
+        <input
+          accept="image/*"
+          capture="environment"
+          className={styles.fileInput}
+          onChange={takePhoto}
+          ref={photoInput}
+          type="file"
+        />
+      </div>
+      {status && (
+        <p className={styles.captureStatus} role="status">
+          {status}
+        </p>
+      )}
+    </section>
+  );
+}
+
 function FilterButton({active, count, label, onClick}) {
   return (
     <button
@@ -305,6 +489,21 @@ function NotebookCard({
       <Heading as="h3">{getTitle(entry)}</Heading>
       <p className={styles.topic}>Topic: {entry.topic || 'Untitled curiosity'}</p>
       <p>{summary}</p>
+      {entry.capturePhoto && (
+        <img
+          alt={`A quick capture from ${entry.topic || 'this project'}`}
+          className={styles.capturePhoto}
+          src={entry.capturePhoto}
+        />
+      )}
+      {entry.captureAudio && (
+        <audio
+          aria-label="Recorded sentence"
+          className={styles.captureAudio}
+          controls
+          src={entry.captureAudio}
+        />
+      )}
       <div className={styles.cardActions}>
         <Link
           to={`/curiosity-engine/${entry.notebookPath}?topic=${encodeURIComponent(entry.topic || '')}&resume=${encodeURIComponent(entry.notebookId)}`}>
@@ -402,6 +601,7 @@ function getTitle(entry) {
 
 function getSummary(entry) {
   return (
+    entry.captureSentence ||
     entry.thinkingChange ||
     entry.improvement ||
     entry.claim ||
@@ -420,6 +620,7 @@ function getDetails(entry) {
       ['How my thinking changed', entry.thinkingChange],
     ],
     build: [
+      ['Quick capture', entry.captureSentence],
       ['Goal', entry.project?.goal || entry.project?.description],
       ['Materials', entry.project?.materials],
       ['Build notes', entry.buildNotes],
@@ -454,6 +655,38 @@ function getDetails(entry) {
       Array.isArray(value) ? value.length : value !== undefined && value !== '',
     )
     .map(([label, value]) => ({label, value}));
+}
+
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+function resizeImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = reject;
+      image.onload = () => {
+        const scale = Math.min(1, 1200 / Math.max(image.width, image.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(image.width * scale);
+        canvas.height = Math.round(image.height * scale);
+        canvas
+          .getContext('2d')
+          .drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.76));
+      };
+      image.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 function summarizeRows(rows) {

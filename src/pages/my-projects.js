@@ -37,17 +37,14 @@ export default function MyProjects() {
   return (
     <Layout
       title="My Projects"
-      description="See how each question grew through attempts, evidence, changes, and new ideas.">
+      description="See each question, photo, attempt, and next idea together.">
       <main className={styles.page}>
         <header className={styles.hero}>
           <div className={`container ${styles.heroInner}`}>
             <div>
               <span>Made by me</span>
-              <Heading as="h1">The story of each project</Heading>
-              <p>
-                See how each question grew through attempts, evidence,
-                changes, and new ideas.
-              </p>
+              <Heading as="h1">Look what you tried.</Heading>
+              <p>Question. Photo. Attempt. Next question.</p>
             </div>
             <div className={styles.galleryScene} aria-hidden="true">
               <i />
@@ -72,10 +69,10 @@ export default function MyProjects() {
               <div className={styles.heading}>
                 <div>
                   <span>{projects.length} {projects.length === 1 ? 'project' : 'projects'}</span>
-                  <Heading as="h2">Look how your ideas changed.</Heading>
+                  <Heading as="h2">Your project stories</Heading>
                 </div>
                 <Link className="button button--primary" to="/curiosity-engine">
-                  Start another curiosity
+                  Start another challenge
                 </Link>
               </div>
               <div className={styles.grid}>
@@ -94,11 +91,11 @@ export default function MyProjects() {
               <div aria-hidden="true">?</div>
               <Heading as="h2">Your first project starts with “What if?”</Heading>
               <p>
-                Pick something curious. Your attempts and evidence will build
-                this gallery automatically.
+                Pick a challenge. Your photos and attempts will build this
+                gallery automatically.
               </p>
               <Link className="button button--primary button--lg" to="/curiosity-engine">
-                Find something to try
+                Find a challenge
               </Link>
             </section>
           )}
@@ -119,15 +116,24 @@ export default function MyProjects() {
 function ProjectCard({entries, index, project}) {
   const artifacts = Array.isArray(project.evidence) ? project.evidence : [];
   const paths = new Set(entries.map((entry) => entry.notebookPath));
-  const sketch = artifacts.find((artifact) => artifact.type === 'sketch' && artifact.sketch);
+  const photo = artifacts.find((artifact) => artifact.photo || artifact.sketch);
   const latestChallenge = Array.isArray(project.challengeIdeas)
     ? project.challengeIdeas.at(-1)
     : null;
+  const latestEntry = entries[0];
+  const attempt = getAttempt(project, latestEntry);
+  const nextQuestion =
+    project.nextQuestion ||
+    latestChallenge?.idea ||
+    'What could you change and try next?';
   return (
     <article className={`${styles.card} ${project.finishedAt ? styles.finished : ''}`}>
       <div className={styles.cover}>
-        {sketch ? (
-          <img alt={`A sketch from ${project.title}`} src={sketch.sketch} />
+        {photo ? (
+          <img
+            alt={`A saved attempt from ${project.title}`}
+            src={photo.photo || photo.sketch}
+          />
         ) : (
           <div className={styles.coverPattern}>
             <span>{coverIcon(index)}</span>
@@ -143,30 +149,26 @@ function ProjectCard({entries, index, project}) {
       <div className={styles.cardBody}>
         <small>{project.topic}</small>
         <Heading as="h3">{project.title}</Heading>
-        <p>{project.question || 'This project still needs its main question.'}</p>
-        <div className={styles.facts}>
-          <span><b>{artifacts.length}</b> evidence {artifacts.length === 1 ? 'card' : 'cards'}</span>
-          <span><b>{paths.size}</b> {paths.size === 1 ? 'path' : 'paths'} explored</span>
-          <span><b>{project.challengeIdeas?.length || 0}</b> next-version ideas</span>
+        <div className={styles.storyFlow}>
+          <StoryBeat
+            icon="?"
+            label="Question"
+            value={project.question || project.topic || 'What will you try?'}
+          />
+          <StoryBeat
+            icon="📸"
+            label="Photo"
+            value={photo ? 'Attempt captured' : 'Add one in My Lab Notebook'}
+          />
+          <StoryBeat icon="◆" label="Attempt" value={attempt} />
+          <StoryBeat icon="→" label="Next Question" value={nextQuestion} />
         </div>
-        <div className={styles.projectUpdate}>
-          <span>Latest update</span>
-          <p>{new Date(project.updatedAt || project.createdAt).toLocaleDateString()}</p>
-        </div>
-        {project.nextAction && (
-          <div className={styles.projectUpdate}>
-            <span>Next action</span>
-            <p>{project.nextAction}</p>
-          </div>
-        )}
-        {latestChallenge && (
-          <div className={styles.latest}>
-            <span>My next version</span>
-            <p>{latestChallenge.idea}</p>
-          </div>
-        )}
+        <p className={styles.projectDate}>
+          Updated {new Date(project.updatedAt || project.createdAt).toLocaleDateString()}
+          {paths.size ? ` · ${paths.size} quest ${paths.size === 1 ? 'path' : 'paths'}` : ''}
+        </p>
         <Link className="button button--secondary" to={projectLink(project)}>
-          Open this project
+          Keep building →
         </Link>
       </div>
     </article>
@@ -185,4 +187,26 @@ function entriesForProject(project, entries) {
 
 function coverIcon(index) {
   return ['?', '◆', '⌕', '★', '◉'][index % 5];
+}
+
+function StoryBeat({icon, label, value}) {
+  return (
+    <div>
+      <span aria-hidden="true">{icon}</span>
+      <small>{label}</small>
+      <p>{value}</p>
+    </div>
+  );
+}
+
+function getAttempt(project, entry) {
+  return (
+    project.nextAction ||
+    entry?.improvement ||
+    entry?.claim ||
+    entry?.thinkingChange ||
+    entry?.reflection ||
+    entry?.captureSentence ||
+    'Make a first version and see what happens.'
+  );
 }

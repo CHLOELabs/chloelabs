@@ -1,69 +1,124 @@
+import {useEffect, useRef, useState} from 'react';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
-import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import Heading from '@theme/Heading';
+import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import styles from './index.module.css';
 
-const PROJECT_STARTERS = [
+const CHALLENGES = [
   {
-    title: 'Where does Minecraft save your world?',
-    hook: 'Trace what happens when a game remembers what you built.',
-    mode: 'Ages 7–15',
-    path: 'Learn or Build',
-    category: 'Cloud and internet',
+    topic: 'Ice',
+    icon: '❄️',
+    title: 'Can you rescue an ice cube?',
+    hook: 'Build a tiny shelter that keeps an ice cube from melting.',
+    difficulty: 'Easy',
+    time: '20–40 min',
+    build: 'An ice cube shelter',
+    test: 'How long it survives',
+    goal: 'Beat your own best time',
+    route: '/challenges/ice-rescue',
   },
   {
-    title: 'What happens when you upload a photo?',
-    hook: 'Follow a photo from your device to the internet and back again.',
-    mode: 'Ages 9–15',
-    path: 'Investigate or Create',
-    category: 'Cloud and data',
+    topic: 'Games',
+    icon: '🎮',
+    title: 'Can you invent a game with one strange rule?',
+    hook: 'Change one familiar rule and see whether the game gets better.',
+    difficulty: 'Medium',
+    time: '30–60 min',
+    action: 'Make a rule, play-test it, and remix it.',
+    route: '/challenges/strange-rule-game',
   },
   {
-    title: 'Can you make a weather station better over time?',
-    hook: 'Collect observations, improve the design, and compare what changes.',
-    mode: 'Ages 7–15',
-    path: 'Build or Investigate',
-    category: 'Earth and data',
+    topic: 'Dogs',
+    icon: '🐶',
+    title: 'Can you design a puzzle for a dog?',
+    hook: 'Create a safe treat puzzle and watch how a dog solves it.',
+    difficulty: 'Medium',
+    time: '30–45 min',
+    action: 'Build a puzzle, observe, and improve it.',
+    route: '/challenges/dog-puzzle',
+  },
+  {
+    topic: 'Space',
+    icon: '🚀',
+    title: 'Can you land a paper spacecraft?',
+    hook: 'Protect a tiny passenger during a drop from outer space.',
+    difficulty: 'Medium',
+    time: '30–60 min',
+    action: 'Build a lander, drop-test it, and redesign it.',
+  },
+  {
+    topic: 'Ocean',
+    icon: '🌊',
+    title: 'Can you make something float twice?',
+    hook: 'Use the same material to build two completely different boats.',
+    difficulty: 'Easy',
+    time: '20–40 min',
+    action: 'Build, float-test, and compare two designs.',
+  },
+  {
+    topic: 'Weather',
+    icon: '🌦️',
+    title: 'Can you catch the wind?',
+    hook: 'Build a simple wind detector that moves when the air does.',
+    difficulty: 'Easy',
+    time: '20–45 min',
+    action: 'Make a detector, test it outside, and tune it.',
+  },
+  {
+    topic: 'Plants',
+    icon: '🌱',
+    title: 'Which way will a plant choose?',
+    hook: 'Create a light maze and predict how a plant will grow through it.',
+    difficulty: 'Boss quest',
+    time: 'Several days',
+    action: 'Build a maze, photograph growth, and compare changes.',
   },
 ];
 
-function HomepageHeader() {
+function HomepageHeader({onSurprise, selectedTopic, spinning}) {
   return (
     <header className={styles.heroBanner}>
       <div className={`container ${styles.heroGrid}`}>
         <div className={styles.heroCopy}>
-          <span className={styles.eyebrow}>ChloeLabs · A lab for curious minds</span>
-          <Heading as="h1">Turn one question into a project that grows with you.</Heading>
-          <p>
-            Choose something you wonder about. Learn, build, investigate,
-            create, or share. Save what you try, collect evidence, and watch
-            your ideas change over time.
-          </p>
+          <span className={styles.eyebrow}>ChloeLabs</span>
+          <Heading as="h1">Curious Kids. Future Leaders.</Heading>
+          <Heading as="h2">What cool thing can you build today?</Heading>
+          <p>Pick a mystery, build something surprising, and watch your ideas grow.</p>
           <div className={styles.heroActions}>
-            <Link className="button button--secondary button--lg" to="/curiosity-engine">
-              Start with my own question
+            <button
+              className={styles.surpriseButton}
+              disabled={spinning}
+              onClick={() => onSurprise()}
+              type="button">
+              <span aria-hidden="true">{spinning ? '✨' : '🎲'}</span>
+              {spinning ? 'Choosing…' : 'Surprise Me'}
+            </button>
+            <Link className={styles.questionButton} to="/curiosity-engine">
+              <span aria-hidden="true">💡</span> I Have My Own Question
             </Link>
-            <a className={styles.howLink} href="#project-starters">
-              Give me an idea
-            </a>
+          </div>
+          <div className={styles.topicChips} aria-label="Choose a mystery topic">
+            {CHALLENGES.map((challenge) => (
+              <button
+                aria-pressed={selectedTopic === challenge.topic}
+                key={challenge.topic}
+                onClick={() => onSurprise(challenge.topic)}
+                type="button">
+                <span aria-hidden="true">{challenge.icon}</span>
+                {challenge.topic}
+              </button>
+            ))}
           </div>
         </div>
-        <div className={styles.makerScene} aria-label="A playful idea machine turning curiosity into projects">
-          <span className={styles.ideaBubble}>What if…?</span>
-          <div className={styles.machine}>
-            <span>?</span>
-            <strong>TRY IT</strong>
-            <i />
-            <i />
-            <i />
+        <div className={`${styles.mysteryMachine} ${spinning ? styles.machineSpinning : ''}`} aria-hidden="true">
+          <div className={styles.machineWindow}>
+            <span>{spinning ? '✨' : '?'}</span>
           </div>
-          <div className={styles.outputCards}>
-            <span>MAKE</span>
-            <span>TEST</span>
-            <span>REMIX</span>
-          </div>
+          <strong>MYSTERY<br />MACHINE</strong>
+          <div className={styles.machineLights}><i /><i /><i /></div>
+          <div className={styles.machineOutput}>TRY THIS!</div>
         </div>
       </div>
     </header>
@@ -72,134 +127,90 @@ function HomepageHeader() {
 
 export default function Home() {
   const {siteConfig} = useDocusaurusContext();
+  const [selected, setSelected] = useState(null);
+  const [spinning, setSpinning] = useState(false);
+  const resultRef = useRef(null);
+  const timerRef = useRef(null);
+
+  useEffect(() => () => window.clearTimeout(timerRef.current), []);
+
+  function chooseChallenge(topic) {
+    window.clearTimeout(timerRef.current);
+    setSpinning(true);
+    setSelected(null);
+    timerRef.current = window.setTimeout(() => {
+      const choices = topic
+        ? CHALLENGES.filter((challenge) => challenge.topic === topic)
+        : CHALLENGES;
+      const challenge = choices[Math.floor(Math.random() * choices.length)];
+      setSelected(challenge);
+      setSpinning(false);
+      window.requestAnimationFrame(() =>
+        resultRef.current?.scrollIntoView({behavior: 'smooth', block: 'center'}),
+      );
+    }, 650);
+  }
+
   return (
     <Layout
       title={siteConfig.title}
-      description="Turn curiosity into real projects through making, testing, creativity, and reflection.">
-      <HomepageHeader />
+      description="Pick a mystery, build something surprising, and watch your ideas grow.">
+      <HomepageHeader
+        onSurprise={chooseChallenge}
+        selectedTopic={selected?.topic}
+        spinning={spinning}
+      />
       <main>
-        <HomepageFeatures id="how-it-works" />
-
-        <section className={styles.example}>
+        <section
+          aria-live="polite"
+          className={`${styles.surpriseStage} ${selected ? styles.hasResult : ''}`}
+          ref={resultRef}>
           <div className="container">
-            <div className={styles.sectionHeading}>
-              <span>Example only · not added to My Projects</span>
-              <Heading as="h2">See how one question becomes a project</Heading>
-            </div>
-            <div className={styles.exampleCard}>
-              <div className={styles.exampleIntro}>
-                <span>Example project</span>
-                <Heading as="h3">Where does my Minecraft world go when I save it?</Heading>
-                <p>
-                  <strong>Starting question:</strong> Where is a game world
-                  stored, and how can I open it again later?
-                </p>
+            {selected ? (
+              <ChallengeCard challenge={selected} featured />
+            ) : (
+              <div className={styles.stagePrompt}>
+                <span aria-hidden="true">{spinning ? '🎲' : '↟'}</span>
+                <strong>{spinning ? 'Shuffling mysteries…' : 'Tap Surprise Me to reveal one challenge.'}</strong>
               </div>
-              <ol className={styles.storyTimeline}>
-                <StoryStep
-                  label="Question"
-                  title="First idea"
-                  text="The world might live inside the computer or game console."
-                />
-                <StoryStep
-                  label="First attempt"
-                  title="Learn and build"
-                  text="Games can save data on a device or remotely on a server. The first diagram connected the player, device, internet, server, and storage."
-                />
-                <StoryStep
-                  label="Evidence"
-                  title="Keep what happened"
-                  text="A first diagram, revised diagram, short observation, and comparison between local and online saving."
-                />
-                <StoryStep
-                  label="Revision"
-                  title="What changed"
-                  text="At first, “the cloud” seemed like one place. Later, the project showed files moving among devices, servers, and storage systems."
-                />
-                <StoryStep
-                  label="Next question"
-                  title="Keep going"
-                  text="What happens if millions of players try to save at the same time?"
-                />
-              </ol>
-              <aside className={styles.nextVersion}>
-                <strong>Next version</strong>
-                <p>
-                  Add multiplayer players and show how their actions reach the
-                  same saved world.
-                </p>
-              </aside>
-            </div>
+            )}
           </div>
         </section>
 
-        <section className={styles.starters} id="project-starters">
+        <section className={styles.challenges} id="challenges">
           <div className="container">
             <div className={styles.sectionHeading}>
-              <span>Project Starters</span>
-              <Heading as="h2">Need something to wonder about?</Heading>
-              <p>
-                Pick a starting point, then shape it into a project that is
-                yours.
-              </p>
+              <span>Choose a challenge</span>
+              <Heading as="h2">Pick one. Start making.</Heading>
+              <p>No perfect answer needed. Try something and see what happens.</p>
             </div>
-            <div className={styles.starterGrid}>
-              {PROJECT_STARTERS.map((starter, index) => (
-                <article key={starter.title}>
-                  <span className={styles.starterNumber}>0{index + 1}</span>
-                  <small>{starter.category}</small>
-                  <Heading as="h3">{starter.title}</Heading>
-                  <p>{starter.hook}</p>
-                  <dl>
-                    <div><dt>Suggested mode</dt><dd>{starter.mode}</dd></div>
-                    <div><dt>First path</dt><dd>{starter.path}</dd></div>
-                  </dl>
-                  <Link
-                    className="button button--secondary"
-                    to={`/curiosity-engine?topic=${encodeURIComponent(starter.title)}`}>
-                    Start this project
-                  </Link>
-                </article>
+            <div className={styles.challengeGrid}>
+              {CHALLENGES.slice(0, 6).map((challenge) => (
+                <ChallengeCard challenge={challenge} key={challenge.topic} />
               ))}
             </div>
           </div>
         </section>
 
-        <section className={styles.portfolioGuide}>
-          <div className="container">
-            <div>
-              <span>My Lab Notebook</span>
-              <Heading as="h2">The detailed record of your work</Heading>
-              <p>
-                Every saved note, experiment, build, discovery, creation, and
-                sharing plan lives here.
-              </p>
-              <Link to="/my-lab-notebook">Open the working record →</Link>
-            </div>
-            <div>
-              <span>My Projects</span>
-              <Heading as="h2">The story of each project</Heading>
-              <p>
-                See how each question grew through attempts, evidence, changes,
-                and new ideas.
-              </p>
-              <Link to="/my-projects">Open the project portfolio →</Link>
-            </div>
-          </div>
-        </section>
+        <HomepageFeatures id="how-it-works" />
 
-        <section className={styles.founder}>
+        <section className={styles.keepIt}>
           <div className="container">
-            <div className={styles.founderMark} aria-hidden="true">AT</div>
             <div>
-              <span>Created by Amanda Tan</span>
-              <p>
-                Amanda is an AI, cloud, and research-computing education leader
-                with more than a decade of experience turning complex
-                technology into hands-on learning. ChloeLabs was inspired by
-                her daughter Chloe and built to help curious children develop
-                ideas into meaningful projects over time.
-              </p>
+              <span aria-hidden="true">📸</span>
+              <Heading as="h2">Save what happened.</Heading>
+              <p>Take a photo or record one sentence. That is enough.</p>
+              <Link className="button button--primary button--lg" to="/my-lab-notebook">
+                Open My Lab Notebook
+              </Link>
+            </div>
+            <div>
+              <span aria-hidden="true">🖼️</span>
+              <Heading as="h2">Watch your projects grow.</Heading>
+              <p>See the question, attempt, photo, and next idea together.</p>
+              <Link className="button button--secondary button--lg" to="/my-projects">
+                See My Projects
+              </Link>
             </div>
           </div>
         </section>
@@ -208,12 +219,43 @@ export default function Home() {
   );
 }
 
-function StoryStep({label, title, text}) {
+function ChallengeCard({challenge, featured = false}) {
   return (
-    <li>
-      <span>{label}</span>
-      <strong>{title}</strong>
-      <p>{text}</p>
-    </li>
+    <article className={`${styles.challengeCard} ${featured ? styles.featuredChallenge : ''}`}>
+      <div className={styles.challengeArt} aria-hidden="true">
+        <span>{challenge.icon}</span>
+        <i />
+        <i />
+      </div>
+      <div className={styles.challengeBody}>
+        <small>{challenge.topic} mystery</small>
+        <Heading as={featured ? 'h2' : 'h3'}>{challenge.title}</Heading>
+        <p>{challenge.hook}</p>
+        <div className={styles.challengeFacts}>
+          <span><b>Difficulty</b>{challenge.difficulty}</span>
+          <span><b>Time</b>{challenge.time}</span>
+        </div>
+        {challenge.build ? (
+          <div className={styles.missionRows}>
+            <span><b>You’ll build</b>{challenge.build}</span>
+            <span><b>You’ll test</b>{challenge.test}</span>
+            <span><b>Your goal</b>{challenge.goal}</span>
+          </div>
+        ) : (
+          <div className={styles.doThis}>
+            <b>What you’ll do</b>
+            <span>{challenge.action}</span>
+          </div>
+        )}
+        <Link
+          className="button button--primary button--lg"
+          to={
+            challenge.route ||
+            `/curiosity-engine?topic=${encodeURIComponent(challenge.title)}`
+          }>
+          Start this challenge →
+        </Link>
+      </div>
+    </article>
   );
 }

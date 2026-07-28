@@ -1,7 +1,7 @@
 .page{background:#f6f1e7;min-height:75vh}
 .hero{background:linear-gradient(135deg,#173f49,#246457);color:#fff;overflow:hidden;padding:4rem 1rem}
 .heroInner{align-items:center;display:grid;gap:3rem;grid-template-columns:1fr 300px;max-width:1080px}
-.hero span,.heading span,.cardBody>small,.latest span,.projectUpdate span{color:#f5a24a;font-size:.7rem;font-weight:900;letter-spacing:.11em;text-transform:uppercase}
+.hero span,.heading span,.cardBody>small{color:#f5a24a;font-size:.7rem;font-weight:900;letter-spacing:.11em;text-transform:uppercase}
 .hero h1{color:#fff;font-size:clamp(2.8rem,7vw,5rem);margin:.35rem 0}
 .hero p{font-size:1.15rem;max-width:650px}
 .galleryScene{background:#f19a3e;border:8px solid #fff;border-radius:1.3rem;box-shadow:12px 14px 0 #0e3038;color:#173f49;display:grid;height:200px;place-items:center;position:relative;transform:rotate(3deg);width:240px}
@@ -31,15 +31,7 @@
 .cardBody{padding:1.3rem}
 .cardBody>small{color:#b85f14}
 .cardBody h3{color:#173f49;margin:.35rem 0}
-.facts{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0}
-.facts span{background:#edf3ef;border-radius:999px;font-size:.75rem;padding:.4rem .6rem}
-.facts b{color:#28745f}
-.latest{background:#fff3de;border-left:4px solid #e77f27;border-radius:.5rem;margin-bottom:1rem;padding:.7rem}
-.latest span{color:#b85f14}
-.latest p{margin:.2rem 0 0}
-.projectUpdate{border-top:1px solid #e2e3de;padding:.65rem 0}
-.projectUpdate span{color:#b85f14}
-.projectUpdate p{margin:.2rem 0 0}
+.storyFlow{display:grid;gap:.55rem;margin:1rem 0}.storyFlow>div{align-items:start;background:#f7f4ed;border-radius:.75rem;display:grid;gap:.1rem .65rem;grid-template-columns:2rem 1fr;padding:.7rem}.storyFlow>div>span{align-items:center;background:#dceee6;border-radius:50%;color:#173f49;display:flex;font-weight:950;grid-row:1/3;height:2rem;justify-content:center;width:2rem}.storyFlow small{color:#b85f14;font-size:.65rem;font-weight:950;letter-spacing:.08em;text-transform:uppercase}.storyFlow p{font-size:.86rem;margin:0}.projectDate{color:#687b75;font-size:.75rem}
 .empty{text-align:center;padding:5rem 1rem}
 .empty>div{background:#f19a3e;border:7px solid #fff;border-radius:1rem;box-shadow:8px 9px 0 #173f49;color:#173f49;display:grid;font-size:3rem;font-weight:900;height:110px;margin:0 auto 1.5rem;place-items:center;transform:rotate(-4deg);width:110px}
 .empty p{margin:0 auto 1.4rem;max-width:620px}
